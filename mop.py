@@ -15,6 +15,21 @@ Z_AXIS = 0.0
 DIRECTION = 1
  
  
+class triangle3D(object):
+    
+    def __init__(self, s1, s2, s3):
+        self.s1 = s1
+        self.s2 = s2
+        self.s3 = s3
+    
+    def draw(self):
+        for sommet in [self.s1, self.s2, self.s3]:
+            glVertex3f(*sommet)
+
+exa = triangle3D([-0.5, -0.4, 0.0],
+                 [0.7, -0.5, -0.5],
+                 [0.0, 0.8, 0.3])
+
 def InitGL(Width, Height): 
  
     glClearColor(0.9, 0.9, 0.9, 1.0)
@@ -45,19 +60,17 @@ def DrawGLScene():
     glRotatef(Y_AXIS,0.0,1.0,0.0)
     glRotatef(Z_AXIS,0.0,0.0,1.0)
  
-    # Draw Cube (multiple quads)
+    # Draw Triangle
     glBegin(GL_TRIANGLES)
  
     glColor3f(1.0, 0.0, 0.0)
-    glVertex3f(-0.5, -0.4, 0.0)
-    glVertex3f(0.7, -0.5, -0.5)
-    glVertex3f(0.0, 0.8, 0.3)
+    exa.draw()
 
     glEnd()
  
  
     X_AXIS = X_AXIS - 0.30
-    Z_AXIS = Z_AXIS - 0.30
+#    Z_AXIS = Z_AXIS - 0.30
  
     glutSwapBuffers()
  
