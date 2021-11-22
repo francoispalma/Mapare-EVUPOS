@@ -83,11 +83,11 @@ def init():
     fragmentshader = shaders.compileShader(FRAGMENT_SHADER, GL_FRAGMENT_SHADER)
 
     shaderProgram = shaders.compileProgram(vertexshader, fragmentshader)
-    glClearColor(0.1, 0.1, 0.1, 1.0)
+    glClearColor(0.9, 0.9, 0.9, 1.0)
     
-    triangles = [-0.5, -0.5, 0.0,
-                 0.5, -0.5, 0.0,
-                 0.0, 0.5, 0.0]
+    triangles = [-0.5, -0.4, 0.0,
+                 0.7, -0.5, -0.5,
+                 0.0, 0.8, 0.3]
     
     triangles = np.array(triangles, dtype=np.float32)
     
