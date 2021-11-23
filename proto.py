@@ -1,124 +1,155 @@
 from OpenGL.GL import *
-from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from OpenGL.GL import shaders
+from OpenGL.GLU import *
+import sys
 import numpy as np
 
+
+ESCAPE = '\033'
+window = 0
+
+
+#rotation
+X_AXIS = 0.0
+Y_AXIS = 0.0
+Z_AXIS = 0.0
+
+
 class triangle3D(object):
-    s1 = [0, 0, 0]
-    s2 = [0, 0, 0]
-    s3 = [0, 0, 0]
-    
-    def __init__(self, s1, s2, s3):
+    def __init__(self, s1, s2, s3, color=(1, 0, 0)):
         self.s1 = s1
         self.s2 = s2
         self.s3 = s3
-    
-    def projection(self, axis):  # returns 2D triangle
-        pass
+        self.color = color
 
+    def draw(self):
+        glBegin(GL_TRIANGLES)
 
-class triangle2D(object):
-    s1 = [0, 0]
-    s2 = [0, 0]
-    s3 = [0, 0]
-    
-    def __init__(self, s1, s2, s3):
-        self.s1 = s1
-        self.s2 = s2
-        self.s3 = s3
+        glColor3f(*self.color)
+        for sommet in [self.s1, self.s2, self.s3]:
+            glVertex3f(*sommet)
+
+        glEnd()
 
 
 class voxel(object):
-    coord_x = 0
-    coord_y = 0
-    coord_z = 0
-    width = 0
-    
-    def __init__(self, x, y, z, width):
+    width = 0.05
+
+    def __init__(self, x, y, z, color=(0, 1, 0)):
         self.coord_x = x
         self.coord_y = y
         self.coord_z = z
-        self.width = width
+        self.color = color
+        # Do normalization later
+        self.faces = []
+        # TODO: Do it properly (gray's code)
+        width = voxel.width
+        self.faces += [[[x + width, y + width, z + width],
+                        [x + width, y + width, z - width],
+                        [x + width, y - width, z - width],
+                        [x + width, y - width, z + width]]]
+        self.faces += [[[x + width, y + width, z + width],
+                        [x + width, y - width, z + width],
+                        [x - width, y - width, z + width],
+                        [x - width, y + width, z + width]]]
+        self.faces += [[[x + width, y + width, z + width],
+                        [x + width, y + width, z - width],
+                        [x - width, y + width, z - width],
+                        [x - width, y + width, z + width]]]
+        self.faces += [[[x - width, y + width, z + width],
+                        [x - width, y + width, z - width],
+                        [x - width, y - width, z - width],
+                        [x - width, y - width, z + width]]]
+        self.faces += [[[x + width, y - width, z + width],
+                        [x + width, y - width, z - width],
+                        [x - width, y - width, z - width],
+                        [x - width, y - width, z + width]]]
+        self.faces += [[[x + width, y + width, z - width],
+                        [x + width, y - width, z - width],
+                        [x - width, y - width, z - width],
+                        [x - width, y + width, z - width]]]
+
+    def get_coords(self):
+        return (self.coord_x, self.coord_y, self.coord_z)
+
+    def draw(self):
+        glBegin(GL_QUADS)
+
+        for face in self.faces:
+            glColor3f(*self.color)
+            for sommet in face:
+                glVertex3f(*sommet)
+
+        glEnd()
 
 
-VERTEX_SHADER = """
- 
-#version 140
- 
-    in vec4 position;
-    void main() {
-    gl_Position = position;
- 
-}
- 
- 
-"""
- 
- 
- 
-FRAGMENT_SHADER = """
-#version 140
- 
-    void main() {
- 
-    gl_FragColor = 
- 
-    vec4(1.0f, 0.0f,0.0f,1.0f);
- 
-    }
- 
-"""
- 
-shaderProgram = None
-quadric = None
+A, B, C = [-0.5, -0.4, 0.0], [0.7, -0.5, -0.5], [0.0, 0.8, 0.3]
 
-def init():
-    global quadric
-    global VERTEXT_SHADER
-    global FRAGMEN_SHADER
-    global shaderProgram
+exa = triangle3D(A, B, C)
+vox1 = voxel(*A)
+vox2 = voxel(*B)
+vox3 = voxel(*C)
 
-    vertexshader = shaders.compileShader(VERTEX_SHADER, GL_VERTEX_SHADER)
-    fragmentshader = shaders.compileShader(FRAGMENT_SHADER, GL_FRAGMENT_SHADER)
-
-    shaderProgram = shaders.compileProgram(vertexshader, fragmentshader)
+def InitGL(Width, Height): 
     glClearColor(0.9, 0.9, 0.9, 1.0)
+    glClearDepth(1.0) 
+    glDepthFunc(GL_LESS)
+    glEnable(GL_DEPTH_TEST)
+    glShadeModel(GL_SMOOTH)   
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(45.0, float(Width)/float(Height), 0.1, 100.0)
+    glMatrixMode(GL_MODELVIEW)
+
+
+def keyPressed(*args):
+    if args[0] == ESCAPE:
+        sys.exit()
+
+
+def DrawGLScene():
+    global X_AXIS,Y_AXIS,Z_AXIS
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    glLoadIdentity()
+    glTranslatef(0.0,0.0,-6.0)
+
+    glRotatef(X_AXIS,1.0,0.0,0.0)
+    glRotatef(Y_AXIS,0.0,1.0,0.0)
+    glRotatef(Z_AXIS,0.0,0.0,1.0)
+
+    # Draw Triangle
+    exa.draw()
+    vox1.draw()
+    vox2.draw()
+    vox3.draw()
     
-    triangles = [-0.5, -0.4, 0.0,
-                 0.7, -0.5, -0.5,
-                 0.0, 0.8, 0.3]
-    
-    triangles = np.array(triangles, dtype=np.float32)
-    
-    VBO = glGenBuffers(1)
-    glBindBuffer(GL_ARRAY_BUFFER, VBO)
-    glBufferData(GL_ARRAY_BUFFER, triangles.nbytes, triangles, GL_STATIC_DRAW)
-    
-    position = glGetAttribLocation(shaderProgram, 'position')
-    glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 0, None)
-    glEnableVertexAttribArray(position)
-#    quadric = gluNewQuadric()
-#    gluQuadricDrawStyle(quadric, GLU_FILL)
+    # Draw voxels at each vertex
     
 
-def display():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    
-    glUseProgram(shaderProgram)
-    glDrawArrays(GL_TRIANGLES, 0, 3)
-    glUseProgram(0)
-    
+    X_AXIS = X_AXIS - 0.30
+#    Z_AXIS = Z_AXIS - 0.30
+
     glutSwapBuffers()
 
-if __name__ == "__main__":
-    glutInit()
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA)
-    glutCreateWindow('proto')
-    glutReshapeWindow(512, 512)
-    
-    init()
-    
-    glutDisplayFunc(display)
 
+def main():
+    global window
+
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    glutInitWindowSize(640,480)
+    glutInitWindowPosition(200,200)
+
+    window = glutCreateWindow('proto')
+
+    glutDisplayFunc(DrawGLScene)
+    glutIdleFunc(DrawGLScene)
+    glutKeyboardFunc(keyPressed)
+    InitGL(640, 480)
     glutMainLoop()
+
+
+if __name__ == "__main__":
+    main() 
