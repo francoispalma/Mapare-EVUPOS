@@ -21,7 +21,7 @@ class Triangle2D(object):
         self.s3 = s3
         
     def __repr__(self):
-	    return f'triangle2D(s1={self.s1}, s2={self.s1}, s2={self.s3})'
+	    return f'triangle2D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3})'
 
 
 class Triangle3D(object):
@@ -33,7 +33,7 @@ class Triangle3D(object):
         self.voxlist = []
         
     def __repr__(self):
-        return f'triangle3D(s1={self.s1}, s2={self.s1}, s2={self.s3}, color={self.color}, voxlist={self.voxlist})'
+        return f'triangle3D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3}, color:{self.color}, voxlist:{self.voxlist})'
 
     def draw(self):
         glBegin(GL_TRIANGLES)
@@ -85,7 +85,7 @@ class Voxel(object):
         self.color = color
         
     def __repr__(self):
-        return f'voxel(coord = x:{self.coord_x} y:{self.coord_y} z:{self.coord_z}, color={self.color})'
+        return f'voxel(coord:[{self.coord_x}, {self.coord_y}, {self.coord_z}], color:{self.color})'
 
     def get_coords(self):
         return self.coord_x, self.coord_y, self.coord_z
