@@ -2,7 +2,7 @@ from OpenGL.GL import *
 
 
 class Voxel(object):
-    width = 0.05
+    width = 1
 
     def __init__(self, coord_x, coord_y, coord_z, color=(0, 1, 0)):
         self.coord_x = coord_x

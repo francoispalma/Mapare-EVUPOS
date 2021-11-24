@@ -1,5 +1,51 @@
 from OpenGL.GL import *
+from Voxel import Voxel
 import numpy as np
+
+
+def sort_on_axis(P0, P1, P2, i):
+    if P0[i] > P1[i]:
+        if P0[i] > P2[i]:
+            if P1[i] > P2[i]:
+                return P0, P1, P2
+            else:
+                return P0, P2, P1
+        else:
+            return P2, P0, P1
+    else:
+        if P1[i] > P2[i]:
+            if P0[i] > P2[i]:
+                return P1, P0, P2
+            else:
+                return P1, P2, P0
+        else:
+            return P2, P1, P0
+
+
+def sign(expr):
+    return -1 + (expr >= 0) * 2
+
+
+def mark_line_ILV(P0, P1, Q):
+    dP = []
+    dP += [sign(P1[0] -  P0[0])]
+    dP += [sign(P1[1] -  P0[1])]
+    dP += [sign(P1[2] -  P0[2])]
+    L = []
+    L += [abs(P1[1] - P0[1]) * abs(P1[2] - P0[2])]
+    L += [abs(P1[0] - P0[0]) * abs(P1[2] - P0[2])]
+    L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
+    M = L.copy()
+    Pcurrent = P0.copy()
+    while Pcurrent[0] != P1[0] and Pcurrent[1] != P1[1] and Pcurrent[2] != P1[2]:
+        Lmin = min(L[0], L[1], L[2])
+        Lindex = abs((Lmin == L[1]) - (Lmin == L[2]) * 2)
+        Pcurrent[Lindex] = Pcurrent[Lindex] + dP[Lindex]
+        L = (np.array(L) - Lmin).tolist()
+        L[Lindex] = 2 * M[Lindex]
+        Q += [Voxel(*Pcurrent)]
+
+    return Q
 
 
 class Triangle2D(object):
@@ -15,6 +61,11 @@ class Triangle2D(object):
     def get_vertices(self):
         return [self.s1, self.s2, self.s3]
 
+    def normalize(self, maqs):
+        self.s1 = (np.array(self.s1) / maqs).tolist()
+        self.s2 = (np.array(self.s2) / maqs).tolist()
+        self.s3 = (np.array(self.s3) / maqs).tolist()
+
     def __repr__(self):
         return f'Triangle2D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3})'
 
@@ -27,6 +78,7 @@ class Triangle3D(object):
         self.color = color
         self.voxlist = []
         self._projection = None
+        self._dominant_axis = None
 
     def __repr__(self):
         return f'Triangle3D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3}, color:{self.color}, voxlist:{self.voxlist})'
@@ -53,8 +105,11 @@ class Triangle3D(object):
         self.s1 = (np.array(self.s1) / maqs).tolist()
         self.s2 = (np.array(self.s2) / maqs).tolist()
         self.s3 = (np.array(self.s3) / maqs).tolist()
+        Voxel.width = 1 / maqs
         for voxel in self.voxlist:
             voxel.normalize(maqs)
+        if self._projection is not None:
+            self._projection.normalize(maqs)
 
     def find_dominant_axis(self):
         a = (np.array(self.s2) - np.array(self.s1)).tolist()
@@ -69,6 +124,8 @@ class Triangle3D(object):
                 i = j
                 val = normal_vector[j]
 
+        self._dominant_axis = i
+
         return i
 
     def add_voxel(self, voxel):
@@ -78,7 +135,10 @@ class Triangle3D(object):
         for voxel in self.voxlist:
             voxel.draw()
 
-    def project(self, axis):
+    def project(self, axis=None):
+        if axis is None:
+            self.find_dominant_axis()
+            axis = self._dominant_axis
         if type(axis) == int:
             triangle = Triangle2D(self.s1[:axis] + self.s1[axis + 1:],
                                   self.s2[:axis] + self.s2[axis + 1:],
@@ -95,6 +155,24 @@ class Triangle3D(object):
 
             glColor3f(*self._projection.get_color())
             for sommet in self._projection.get_vertices():
-                glVertex3f(*sommet, 0)
+                r_sommet = [0] * 3
+                r_sommet[self._dominant_axis == 0] = sommet[0]
+                r_sommet[2 - (self._dominant_axis == 2)] = sommet[1]
+                glVertex3f(*(r_sommet))
 
             glEnd()
+
+    def voxelize_triangle(self):
+        P0, P1, P2 = self.s1, self.s2, self.s3
+        if self._dominant_axis is not None:
+            i = self._dominant_axis
+        else:
+            i = self.find_dominant_axis()
+        P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
+        Q0, Q1, Q2 = [], [], []
+        self.voxlist += mark_line_ILV(P0, P1, Q0)
+        self.voxlist += mark_line_ILV(P1, P2, Q1)
+        self.voxlist += mark_line_ILV(P0, P2, Q2)
+        Q1 = Q0 + Q1
+        #fill_interior(Q1, Q2, P0, P2, i)
+        

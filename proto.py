@@ -31,12 +31,10 @@ exa = Triangle3D(A, B, C)
 exa.add_voxel(Voxel(*A))
 exa.add_voxel(Voxel(*B))
 exa.add_voxel(Voxel(*C))
+exa.project()
+exa.voxelize_triangle()
 
 exa.normalize()
-
-exa.project(exa.find_dominant_axis())
-
-print(exa._projection)
 
 
 def init_gl(width, height):
@@ -75,10 +73,10 @@ def draw_gl_scene():
     exa.draw_voxels()
 
     # Draw projected triangle
-    exa.draw_projection()
+    #exa.draw_projection()
 
-    X_AXIS = X_AXIS - 1
-    #   Z_AXIS = Z_AXIS - 0.30
+    X_AXIS = X_AXIS - 0.8
+    Z_AXIS = Z_AXIS - 0.01
 
     glutSwapBuffers()
 
