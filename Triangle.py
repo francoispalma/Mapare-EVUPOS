@@ -9,7 +9,7 @@ class Triangle2D(object):
         self.s3 = s3
 
     def __repr__(self):
-        return f'triangle2D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3})'
+        return f'Triangle2D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3})'
 
 
 class Triangle3D(object):
@@ -21,7 +21,7 @@ class Triangle3D(object):
         self.voxlist = []
 
     def __repr__(self):
-        return f'triangle3D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3}, color:{self.color}, voxlist:{self.voxlist})'
+        return f'Triangle3D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3}, color:{self.color}, voxlist:{self.voxlist})'
 
     def draw(self):
         glBegin(GL_TRIANGLES)

@@ -11,7 +11,7 @@ class Voxel(object):
         self.color = color
 
     def __repr__(self):
-        return f'voxel(coord:[{self.coord_x}, {self.coord_y}, {self.coord_z}], color:{self.color})'
+        return f'Voxel(coord:[{self.coord_x}, {self.coord_y}, {self.coord_z}], color:{self.color})'
 
     def get_coords(self):
         return self.coord_x, self.coord_y, self.coord_z
