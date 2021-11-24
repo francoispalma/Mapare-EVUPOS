@@ -41,41 +41,55 @@ class voxel(object):
         self.coord_z = z
         self.color = color
         # Do normalization later
-        self.faces = []
-        # TODO: Do it properly (gray's code)
-        width = voxel.width
-        self.faces += [[[x + width, y + width, z + width],
-                        [x + width, y + width, z - width],
-                        [x + width, y - width, z - width],
-                        [x + width, y - width, z + width]]]
-        self.faces += [[[x + width, y + width, z + width],
-                        [x + width, y - width, z + width],
-                        [x - width, y - width, z + width],
-                        [x - width, y + width, z + width]]]
-        self.faces += [[[x + width, y + width, z + width],
-                        [x + width, y + width, z - width],
-                        [x - width, y + width, z - width],
-                        [x - width, y + width, z + width]]]
-        self.faces += [[[x - width, y + width, z + width],
-                        [x - width, y + width, z - width],
-                        [x - width, y - width, z - width],
-                        [x - width, y - width, z + width]]]
-        self.faces += [[[x + width, y - width, z + width],
-                        [x + width, y - width, z - width],
-                        [x - width, y - width, z - width],
-                        [x - width, y - width, z + width]]]
-        self.faces += [[[x + width, y + width, z - width],
-                        [x + width, y - width, z - width],
-                        [x - width, y - width, z - width],
-                        [x - width, y + width, z - width]]]
+        
 
     def get_coords(self):
         return (self.coord_x, self.coord_y, self.coord_z)
 
+    def get_faces(self):
+        # TODO: do it smartly with gray's code.
+        w = voxel.width
+        x, y, z = self.coord_x, self.coord_y, self.coord_z
+        faces = []
+
+        faces += [[[x + w, y + w, z + w],
+                   [x + w, y + w, z - w],
+                   [x + w, y - w, z - w],
+                   [x + w, y - w, z + w]]]
+
+        faces += [[[x + w, y + w, z + w],
+                   [x + w, y - w, z + w],
+                   [x - w, y - w, z + w],
+                   [x - w, y + w, z + w]]]
+
+        faces += [[[x + w, y + w, z + w],
+                   [x + w, y + w, z - w],
+                   [x - w, y + w, z - w],
+                   [x - w, y + w, z + w]]]
+
+        faces += [[[x - w, y + w, z + w],
+                   [x - w, y + w, z - w],
+                   [x - w, y - w, z - w],
+                   [x - w, y - w, z + w]]]
+
+        faces += [[[x + w, y - w, z + w],
+                   [x + w, y - w, z - w],
+                   [x - w, y - w, z - w],
+                   [x - w, y - w, z + w]]]
+
+        faces += [[[x + w, y + w, z - w],
+                   [x + w, y - w, z - w],
+                   [x - w, y - w, z - w],
+                   [x - w, y + w, z - w]]]
+
+        return faces
+
     def draw(self):
         glBegin(GL_QUADS)
 
-        for face in self.faces:
+        faces = self.get_faces()
+
+        for face in faces:
             glColor3f(*self.color)
             for sommet in face:
                 glVertex3f(*sommet)
