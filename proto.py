@@ -8,21 +8,20 @@ from random import randrange
 ESCAPE = '\033'
 window = 0
 
-
-#rotation
+# rotation
 X_AXIS = 0.0
 Y_AXIS = 0.0
 Z_AXIS = 0.0
 
 
-class triangle2D(object):
+class Triangle2D(object):
     def __init__(self, s1, s2, s3):
         self.s1 = s1
         self.s2 = s2
         self.s3 = s3
 
 
-class triangle3D(object):
+class Triangle3D(object):
     def __init__(self, s1, s2, s3, color=(1, 0, 0)):
         self.s1 = s1
         self.s2 = s2
@@ -38,7 +37,7 @@ class triangle3D(object):
             glVertex3f(*sommet)
 
         glEnd()
-    
+
     def normalize(self, maqs=None):
         if maqs == None or maqs == 0:
             maqs = 0
@@ -69,7 +68,7 @@ class triangle3D(object):
 
 
 
-class voxel(object):
+class Voxel(object):
     width = 0.05
 
     def __init__(self, x, y, z, color=(0, 1, 0)):
@@ -79,11 +78,11 @@ class voxel(object):
         self.color = color
 
     def get_coords(self):
-        return (self.coord_x, self.coord_y, self.coord_z)
+        return self.coord_x, self.coord_y, self.coord_z
 
     def get_faces(self):
         # TODO: do it smartly with gray's code.
-        w = voxel.width
+        w = Voxel.width
         x, y, z = self.coord_x, self.coord_y, self.coord_z
         faces = []
 
@@ -130,7 +129,7 @@ class voxel(object):
                 glVertex3f(*sommet)
 
         glEnd()
-    
+
     def normalize(self, maqs):
         # temporary
         self.coord_x /= maqs
@@ -145,45 +144,46 @@ A, B, C = [getcoord(), getcoord(), getcoord()], [getcoord(), getcoord(), getcoor
 
 print(A, B, C)
 
-exa = triangle3D(A, B, C)
-exa.add_voxel(voxel(*A))
-exa.add_voxel(voxel(*B))
-exa.add_voxel(voxel(*C))
+exa = Triangle3D(A, B, C)
+exa.add_voxel(Voxel(*A))
+exa.add_voxel(Voxel(*B))
+exa.add_voxel(Voxel(*C))
 
 exa.normalize()
 
-def InitGL(Width, Height): 
+
+def init_gl(width, height):
     glClearColor(0.9, 0.9, 0.9, 1.0)
-    glClearDepth(1.0) 
+    glClearDepth(1.0)
     glDepthFunc(GL_LESS)
     glEnable(GL_DEPTH_TEST)
-    glShadeModel(GL_SMOOTH)   
+    glShadeModel(GL_SMOOTH)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(45.0, float(Width)/float(Height), 0.1, 100.0)
+    gluPerspective(45.0, float(width) / float(height), 0.1, 100.0)
     glMatrixMode(GL_MODELVIEW)
 
 
-def keyPressed(*args):
+def key_pressed(*args):
     if args[0] == ESCAPE:
         sys.exit()
 
 
-def DrawGLScene():
-    global X_AXIS,Y_AXIS,Z_AXIS
+def draw_gl_scene():
+    global X_AXIS, Y_AXIS, Z_AXIS
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     glLoadIdentity()
-    glTranslatef(0.0,0.0,-6.0)
+    glTranslatef(0.0, 0.0, -6.0)
 
-    glRotatef(X_AXIS,1.0,0.0,0.0)
-    glRotatef(Y_AXIS,0.0,1.0,0.0)
-    glRotatef(Z_AXIS,0.0,0.0,1.0)
+    glRotatef(X_AXIS, 1.0, 0.0, 0.0)
+    glRotatef(Y_AXIS, 0.0, 1.0, 0.0)
+    glRotatef(Z_AXIS, 0.0, 0.0, 1.0)
 
     # Draw Triangle
     exa.draw()
-    
+
     # Draw voxels at each vertex
     exa.draw_voxels()
 
@@ -198,17 +198,17 @@ def main():
 
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-    glutInitWindowSize(640,480)
-    glutInitWindowPosition(200,200)
+    glutInitWindowSize(640, 480)
+    glutInitWindowPosition(200, 200)
 
     window = glutCreateWindow('proto')
 
-    glutDisplayFunc(DrawGLScene)
-    glutIdleFunc(DrawGLScene)
-    glutKeyboardFunc(keyPressed)
-    InitGL(640, 480)
+    glutDisplayFunc(draw_gl_scene)
+    glutIdleFunc(draw_gl_scene)
+    glutKeyboardFunc(key_pressed)
+    init_gl(640, 480)
     glutMainLoop()
 
 
 if __name__ == "__main__":
-    main() 
+    main()
