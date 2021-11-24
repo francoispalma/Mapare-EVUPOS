@@ -3,7 +3,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import sys
 import numpy as np
-
+from random import randrange
 
 ESCAPE = '\033'
 window = 0
@@ -15,12 +15,20 @@ Y_AXIS = 0.0
 Z_AXIS = 0.0
 
 
+class triangle2D(object):
+    def __init__(self, s1, s2, s3):
+        self.s1 = s1
+        self.s2 = s2
+        self.s3 = s3
+
+
 class triangle3D(object):
     def __init__(self, s1, s2, s3, color=(1, 0, 0)):
         self.s1 = s1
         self.s2 = s2
         self.s3 = s3
         self.color = color
+        self.voxlist = []
 
     def draw(self):
         glBegin(GL_TRIANGLES)
@@ -30,6 +38,35 @@ class triangle3D(object):
             glVertex3f(*sommet)
 
         glEnd()
+    
+    def normalize(self, maqs=None):
+        if maqs == None or maqs == 0:
+            maqs = 0
+            for coord in self.s1 + self.s2 + self.s3:
+                if abs(coord) > maqs:
+                    maqs = abs(coord)
+
+        if maqs == 0:
+            raise ValueError
+
+        self.s1 = (np.array(self.s1) / maqs).tolist()
+        self.s2 = (np.array(self.s2) / maqs).tolist()
+        self.s3 = (np.array(self.s3) / maqs).tolist()
+        for voxel in self.voxlist:
+            voxel.normalize(maqs)
+
+    def add_voxel(self, voxel):
+        self.voxlist += [voxel]
+
+    def draw_voxels(self):
+        for voxel in self.voxlist:
+            voxel.draw()
+
+    def project(self, axis):
+        if type(axis) == int:
+            return triangle2D(self.s1[:axis] + self.s1[axis + 1:])
+        #TODO: if axis == X, Y, Z
+
 
 
 class voxel(object):
@@ -40,8 +77,6 @@ class voxel(object):
         self.coord_y = y
         self.coord_z = z
         self.color = color
-        # Do normalization later
-        
 
     def get_coords(self):
         return (self.coord_x, self.coord_y, self.coord_z)
@@ -95,14 +130,27 @@ class voxel(object):
                 glVertex3f(*sommet)
 
         glEnd()
+    
+    def normalize(self, maqs):
+        # temporary
+        self.coord_x /= maqs
+        self.coord_y /= maqs
+        self.coord_z /= maqs
 
 
-A, B, C = [-0.5, -0.4, 0.0], [0.7, -0.5, -0.5], [0.0, 0.8, 0.3]
+def getcoord():
+    return randrange(201) - 100
+A, B, C = [getcoord(), getcoord(), getcoord()], [getcoord(), getcoord(), getcoord()], [getcoord(), getcoord(), getcoord()]
+#A, B, C = [-0.5, -0.4, 0.0], [0.7, -0.5, -0.5], [0.0, 0.8, 0.3]
+
+print(A, B, C)
 
 exa = triangle3D(A, B, C)
-vox1 = voxel(*A)
-vox2 = voxel(*B)
-vox3 = voxel(*C)
+exa.add_voxel(voxel(*A))
+exa.add_voxel(voxel(*B))
+exa.add_voxel(voxel(*C))
+
+exa.normalize()
 
 def InitGL(Width, Height): 
     glClearColor(0.9, 0.9, 0.9, 1.0)
@@ -135,14 +183,11 @@ def DrawGLScene():
 
     # Draw Triangle
     exa.draw()
-    vox1.draw()
-    vox2.draw()
-    vox3.draw()
     
     # Draw voxels at each vertex
-    
+    exa.draw_voxels()
 
-    X_AXIS = X_AXIS - 0.30
+    X_AXIS = X_AXIS - 1
 #    Z_AXIS = Z_AXIS - 0.30
 
     glutSwapBuffers()
