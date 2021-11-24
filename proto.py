@@ -63,11 +63,10 @@ class Triangle3D(object):
 
     def project(self, axis):
         if type(axis) == int:
-            return triangle2D(self.s1[:axis] + self.s1[axis + 1:],
+            return Triangle2D(self.s1[:axis] + self.s1[axis + 1:],
                               self.s2[:axis] + self.s2[axis + 1:],
                               self.s3[:axis] + self.s3[axis + 1:])
         #TODO: if axis == X, Y, Z
-
 
 
 class Voxel(object):
@@ -141,8 +140,11 @@ class Voxel(object):
 
 def getcoord():
     return randrange(201) - 100
-A, B, C = [getcoord(), getcoord(), getcoord()], [getcoord(), getcoord(), getcoord()], [getcoord(), getcoord(), getcoord()]
-#A, B, C = [-0.5, -0.4, 0.0], [0.7, -0.5, -0.5], [0.0, 0.8, 0.3]
+
+
+A, B, C = [getcoord(), getcoord(), getcoord()], [getcoord(), getcoord(), getcoord()], [getcoord(), getcoord(),
+                                                                                       getcoord()]
+# A, B, C = [-0.5, -0.4, 0.0], [0.7, -0.5, -0.5], [0.0, 0.8, 0.3]
 
 print(A, B, C)
 
@@ -190,7 +192,7 @@ def draw_gl_scene():
     exa.draw_voxels()
 
     X_AXIS = X_AXIS - 1
-#    Z_AXIS = Z_AXIS - 0.30
+    #   Z_AXIS = Z_AXIS - 0.30
 
     glutSwapBuffers()
 
