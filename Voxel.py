@@ -4,10 +4,10 @@ from OpenGL.GL import *
 class Voxel(object):
     width = 0.05
 
-    def __init__(self, x, y, z, color=(0, 1, 0)):
-        self.coord_x = x
-        self.coord_y = y
-        self.coord_z = z
+    def __init__(self, coord_x, coord_y, coord_z, color=(0, 1, 0)):
+        self.coord_x = coord_x
+        self.coord_y = coord_y
+        self.coord_z = coord_z
         self.color = color
 
     def __repr__(self):
