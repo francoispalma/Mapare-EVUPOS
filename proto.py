@@ -61,6 +61,21 @@ class Triangle3D(object):
         for voxel in self.voxlist:
             voxel.draw()
 
+    def find_dominant_axis(self):
+        a = (np.array(self.s2) - np.array(self.s1)).tolist()
+        b = (np.array(self.s3) - np.array(self.s1)).tolist()
+        normal_vector = [a[1] * b[2] - a[2] * b[1],
+                         a[2] * b[0] - a[0] * b[2],
+                         a[0] * b[1] - a[1] * b[0]]
+        i = 0
+        val = normal_vector[0]
+        for j in range(1, 3):
+            if normal_vector[j] > val:
+                i = j
+                val = normal_vector[j]
+
+        return i
+
     def project(self, axis):
         if type(axis) == int:
             return Triangle2D(self.s1[:axis] + self.s1[axis + 1:],
