@@ -18,39 +18,37 @@ class Voxel(object):
 
     def get_faces(self):
         # TODO: do it smartly with gray's code.
-        w = Voxel.width
-        x, y, z = self.coord_x, self.coord_y, self.coord_z
         faces = []
 
-        faces += [[[x + w, y + w, z + w],
-                   [x + w, y + w, z - w],
-                   [x + w, y - w, z - w],
-                   [x + w, y - w, z + w]]]
+        faces += [[[self.coord_x + Voxel.width, self.coord_y + Voxel.width, self.coord_z + Voxel.width],
+                   [self.coord_x + Voxel.width, self.coord_y + Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x + Voxel.width, self.coord_y - Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x + Voxel.width, self.coord_y - Voxel.width, self.coord_z + Voxel.width]]]
 
-        faces += [[[x + w, y + w, z + w],
-                   [x + w, y - w, z + w],
-                   [x - w, y - w, z + w],
-                   [x - w, y + w, z + w]]]
+        faces += [[[self.coord_x + Voxel.width, self.coord_y + Voxel.width, self.coord_z + Voxel.width],
+                   [self.coord_x + Voxel.width, self.coord_y - Voxel.width, self.coord_z + Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y - Voxel.width, self.coord_z + Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y + Voxel.width, self.coord_z + Voxel.width]]]
 
-        faces += [[[x + w, y + w, z + w],
-                   [x + w, y + w, z - w],
-                   [x - w, y + w, z - w],
-                   [x - w, y + w, z + w]]]
+        faces += [[[self.coord_x + Voxel.width, self.coord_y + Voxel.width, self.coord_z + Voxel.width],
+                   [self.coord_x + Voxel.width, self.coord_y + Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y + Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y + Voxel.width, self.coord_z + Voxel.width]]]
 
-        faces += [[[x - w, y + w, z + w],
-                   [x - w, y + w, z - w],
-                   [x - w, y - w, z - w],
-                   [x - w, y - w, z + w]]]
+        faces += [[[self.coord_x - Voxel.width, self.coord_y + Voxel.width, self.coord_z + Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y + Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y - Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y - Voxel.width, self.coord_z + Voxel.width]]]
 
-        faces += [[[x + w, y - w, z + w],
-                   [x + w, y - w, z - w],
-                   [x - w, y - w, z - w],
-                   [x - w, y - w, z + w]]]
+        faces += [[[self.coord_x + Voxel.width, self.coord_y - Voxel.width, self.coord_z + Voxel.width],
+                   [self.coord_x + Voxel.width, self.coord_y - Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y - Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y - Voxel.width, self.coord_z + Voxel.width]]]
 
-        faces += [[[x + w, y + w, z - w],
-                   [x + w, y - w, z - w],
-                   [x - w, y - w, z - w],
-                   [x - w, y + w, z - w]]]
+        faces += [[[self.coord_x + Voxel.width, self.coord_y + Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x + Voxel.width, self.coord_y - Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y - Voxel.width, self.coord_z - Voxel.width],
+                   [self.coord_x - Voxel.width, self.coord_y + Voxel.width, self.coord_z - Voxel.width]]]
 
         return faces
 
