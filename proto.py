@@ -39,7 +39,7 @@ class Triangle3D(object):
         glEnd()
 
     def normalize(self, maqs=None):
-        if maqs == None or maqs == 0:
+        if maqs is None or maqs == 0:
             maqs = 0
             for coord in self.s1 + self.s2 + self.s3:
                 if abs(coord) > maqs:
@@ -63,7 +63,9 @@ class Triangle3D(object):
 
     def project(self, axis):
         if type(axis) == int:
-            return triangle2D(self.s1[:axis] + self.s1[axis + 1:])
+            return triangle2D(self.s1[:axis] + self.s1[axis + 1:],
+                              self.s2[:axis] + self.s2[axis + 1:],
+                              self.s3[:axis] + self.s3[axis + 1:])
         #TODO: if axis == X, Y, Z
 
 
