@@ -70,7 +70,6 @@ class Triangle3D(object):
         self.s3 = s3
         self.color = color
         self.voxlist = []
-        self._projection = None
         self._dominant_axis = None
 
     def __repr__(self):
