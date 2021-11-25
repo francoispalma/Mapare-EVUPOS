@@ -37,7 +37,7 @@ def mark_line_ILV(P0, P1, Q):
     L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
     M = L.copy()
     Pcurrent = P0.copy()
-    while Pcurrent[0] != P1[0] and Pcurrent[1] != P1[1] and Pcurrent[2] != P1[2]:
+    while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
         Lmin = min(L[0], L[1], L[2])
         Lindex = abs((Lmin == L[1]) - (Lmin == L[2]) * 2)
         Pcurrent[Lindex] = Pcurrent[Lindex] + dP[Lindex]
@@ -48,26 +48,19 @@ def mark_line_ILV(P0, P1, Q):
     return Q
 
 
-class Triangle2D(object):
-    def __init__(self, s1, s2, s3, color=(0, 0, 1)):
-        self.s1 = s1
-        self.s2 = s2
-        self.s3 = s3
-        self.color = color
-
-    def get_color(self):
-        return self.color
-
-    def get_vertices(self):
-        return [self.s1, self.s2, self.s3]
-
-    def normalize(self, maqs):
-        self.s1 = (np.array(self.s1) / maqs).tolist()
-        self.s2 = (np.array(self.s2) / maqs).tolist()
-        self.s3 = (np.array(self.s3) / maqs).tolist()
-
-    def __repr__(self):
-        return f'Triangle2D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3})'
+def fill_interior(Q1, Q2, P0, P2, axis):
+    for i in range (P2[axis] - P0[axis]):
+        slice_ = P0[axis] + i + 0.5
+        Q1sub = get_sub_sequence(Q1, slice_)
+        Q2sub = get_sub_sequence(Q2, slice_)
+        Qout = [[]]
+        while Q1sub or Q2sub:
+            if Q1sub:
+                Pstart = Q1sub.pop()
+            if Q2sub:
+                Pstop = Q2sub.pop()
+            mark_line_ILV(Pstart, Pstop, Qout[0])
+        return Qout[0]
 
 
 class Triangle3D(object):
@@ -112,6 +105,8 @@ class Triangle3D(object):
             self._projection.normalize(maqs)
 
     def find_dominant_axis(self):
+        if self._dominant_axis is not None:
+            return self._dominant_axis
         a = (np.array(self.s2) - np.array(self.s1)).tolist()
         b = (np.array(self.s3) - np.array(self.s1)).tolist()
         normal_vector = [a[1] * b[2] - a[2] * b[1],
@@ -135,33 +130,6 @@ class Triangle3D(object):
         for voxel in self.voxlist:
             voxel.draw()
 
-    def project(self, axis=None):
-        if axis is None:
-            self.find_dominant_axis()
-            axis = self._dominant_axis
-        if type(axis) == int:
-            triangle = Triangle2D(self.s1[:axis] + self.s1[axis + 1:],
-                                  self.s2[:axis] + self.s2[axis + 1:],
-                                  self.s3[:axis] + self.s3[axis + 1:])
-        # TODO: if axis == X, Y, Z
-        self._projection = triangle
-        return triangle
-
-    def draw_projection(self):
-        if self._projection is None:
-            pass
-        else:
-            glBegin(GL_TRIANGLES)
-
-            glColor3f(*self._projection.get_color())
-            for sommet in self._projection.get_vertices():
-                r_sommet = [0] * 3
-                r_sommet[self._dominant_axis == 0] = sommet[0]
-                r_sommet[2 - (self._dominant_axis == 2)] = sommet[1]
-                glVertex3f(*(r_sommet))
-
-            glEnd()
-
     def voxelize_triangle(self):
         P0, P1, P2 = self.s1, self.s2, self.s3
         if self._dominant_axis is not None:
@@ -169,10 +137,11 @@ class Triangle3D(object):
         else:
             i = self.find_dominant_axis()
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
-        Q0, Q1, Q2 = [], [], []
-        self.voxlist += mark_line_ILV(P0, P1, Q0)
-        self.voxlist += mark_line_ILV(P1, P2, Q1)
-        self.voxlist += mark_line_ILV(P0, P2, Q2)
-        Q1 = Q0 + Q1
-        #fill_interior(Q1, Q2, P0, P2, i)
+        Q0, Q1, Q2 = [[]], [[]], [[]]
+        mark_line_ILV(P0, P1, Q0[0])
+        mark_line_ILV(P1, P2, Q1[0])
+        mark_line_ILV(P0, P2, Q2[0])
+        Q1[0] = Q0[0] + Q1[0]
+        fill_interior(Q1, Q2, P0, P2, i)
+        self.voxlist += Q1[0] + Q2[0]
         

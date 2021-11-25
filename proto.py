@@ -31,7 +31,7 @@ exa = Triangle3D(A, B, C)
 exa.add_voxel(Voxel(*A))
 exa.add_voxel(Voxel(*B))
 exa.add_voxel(Voxel(*C))
-exa.project()
+exa.find_dominant_axis()
 exa.voxelize_triangle()
 
 exa.normalize()
@@ -71,9 +71,6 @@ def draw_gl_scene():
 
     # Draw voxels at each vertex
     exa.draw_voxels()
-
-    # Draw projected triangle
-    #exa.draw_projection()
 
     X_AXIS = X_AXIS - 0.8
     Z_AXIS = Z_AXIS - 0.01
