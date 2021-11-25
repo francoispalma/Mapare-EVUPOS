@@ -3,8 +3,8 @@ from random import randrange
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from Triangle import *
-from Voxel import *
+from triangle import *
+from voxel import *
 
 ESCAPE = '\033'
 window = 0

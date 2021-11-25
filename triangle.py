@@ -1,5 +1,5 @@
 from OpenGL.GL import *
-from Voxel import Voxel
+from voxel import Voxel
 import numpy as np
 
 
