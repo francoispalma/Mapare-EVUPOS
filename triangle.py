@@ -100,8 +100,6 @@ class Triangle3D(object):
         Voxel.width = 1 / maqs
         for voxel in self.voxlist:
             voxel.normalize(maqs)
-        if self._projection is not None:
-            self._projection.normalize(maqs)
 
     def find_dominant_axis(self):
         if self._dominant_axis is not None:
