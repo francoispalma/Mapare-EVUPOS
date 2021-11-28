@@ -65,7 +65,7 @@ def init_gl(width, height):
 def key_pressed(*args):
     """Function for keyboard inputs.
     """
-    global X_AXIS, Y_AXIS, Z_AXIS, AUTO_ROT, FOVY
+    global X_AXIS, Y_AXIS, Z_AXIS, AUTO_ROT, FOVY, XCOORD, YCOORD
     AUTO_ROT = 0
     if args[0] == b'e':
         Z_AXIS += CONST_ROT
@@ -85,6 +85,14 @@ def key_pressed(*args):
         FOVY += 1.0
     elif args[0] == b'c':
         FOVY = 45.0
+    elif args[0] == b'i':
+        YCOORD += 0.1
+    elif args[0] == b'j':
+        XCOORD -= 0.1
+    elif args[0] == b'k':
+        YCOORD -= 0.1
+    elif args[0] == b'l':
+        XCOORD += 0.1
     elif args[0] == b'a':
         AUTO_ROT = 1
     else:
@@ -98,15 +106,20 @@ def draw_gl_scene():
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    # Zoom refresh
+
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
+
+    # Zoom
     gluPerspective(FOVY, WINRATIO, 0.1, 100.0)
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
+    
+    # Translation
     glTranslatef(XCOORD, YCOORD, ZCOORD)
 
+    # Rotation
     glRotatef(X_AXIS, 1.0, 0.0, 0.0)
     glRotatef(Y_AXIS, 0.0, 1.0, 0.0)
     glRotatef(Z_AXIS, 0.0, 0.0, 1.0)
@@ -117,7 +130,7 @@ def draw_gl_scene():
     # Draw voxels
     exa.draw_voxels()
 
-    # Rotation
+    # Autorotation
     X_AXIS = X_AXIS - 0.8 * AUTO_ROT
     Z_AXIS = Z_AXIS - 0.01 * AUTO_ROT
 
