@@ -18,6 +18,15 @@ Z_AXIS = 0.0
 CONST_ROT = 8.0
 AUTO_ROT = 1
 
+# zoom
+FOVY = 45.0
+WINRATIO = 0
+
+
+# translation
+XCOORD = 0.0
+YCOORD = 0.0
+ZCOORD = -6.0
 
 def get_coord():
     return randrange(201) - 100
@@ -38,6 +47,7 @@ exa.normalize()
 
 
 def init_gl(width, height):
+    global WINRATIO
     """Function to initialise some variables at the beginning.
     """
     glClearColor(0.9, 0.9, 0.9, 1.0)
@@ -47,14 +57,15 @@ def init_gl(width, height):
     glShadeModel(GL_SMOOTH)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(45.0, float(width) / float(height), 0.1, 100.0)
+    WINRATIO = float(width) / float(height)
+    gluPerspective(FOVY, WINRATIO, 0.1, 100.0)
     glMatrixMode(GL_MODELVIEW)
 
 
 def key_pressed(*args):
     """Function for keyboard inputs.
     """
-    global X_AXIS, Y_AXIS, Z_AXIS, AUTO_ROT
+    global X_AXIS, Y_AXIS, Z_AXIS, AUTO_ROT, FOVY
     AUTO_ROT = 0
     if args[0] == b'e':
         Z_AXIS += CONST_ROT
@@ -68,6 +79,12 @@ def key_pressed(*args):
         X_AXIS -= CONST_ROT
     elif args[0] == b'g':
         Y_AXIS -= CONST_ROT
+    elif args[0] == b'+':
+        FOVY = max(1.0, FOVY - 1.0)
+    elif args[0] == b'-':
+        FOVY += 1.0
+    elif args[0] == b'c':
+        FOVY = 45.0
     elif args[0] == b'a':
         AUTO_ROT = 1
     else:
@@ -81,8 +98,14 @@ def draw_gl_scene():
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+    # Zoom refresh
+    glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    glTranslatef(0.0, 0.0, -6.0)
+    gluPerspective(FOVY, WINRATIO, 0.1, 100.0)
+
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    glTranslatef(XCOORD, YCOORD, ZCOORD)
 
     glRotatef(X_AXIS, 1.0, 0.0, 0.0)
     glRotatef(Y_AXIS, 0.0, 1.0, 0.0)
@@ -112,7 +135,7 @@ def main():
 
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-    glutInitWindowSize(wifth, height)
+    glutInitWindowSize(width, height)
     glutInitWindowPosition(200, 200)
 
     window = glutCreateWindow('proto')
