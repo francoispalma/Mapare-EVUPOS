@@ -19,6 +19,12 @@ class Voxel(object):
     def __getitem__(self, item):
         return self.get_coords()[item]
 
+    def __hash__(self):
+        return hash(tuple(self.get_coords()))
+
+    def __eq__(self, other):
+        return self.coord_x == other.coord_x and self.coord_y == other.coord_y and self.coord_z == other.coord_z
+
     def get_faces(self):
         # TODO: do it smartly with gray's code.
         faces = []
