@@ -42,6 +42,7 @@ print(A, B, C)
 # We construct a triangle from them
 exa = Triangle3D(A, B, C)
 exa.voxelize_triangle()
+print("boop")
 
 exa.normalize()
 

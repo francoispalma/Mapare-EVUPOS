@@ -14,7 +14,10 @@ class Voxel(object):
         return f'Voxel(coord:[{self.coord_x}, {self.coord_y}, {self.coord_z}], color:{self.color})'
 
     def get_coords(self):
-        return self.coord_x, self.coord_y, self.coord_z
+        return [self.coord_x, self.coord_y, self.coord_z]
+
+    def __getitem__(self, item):
+        return self.get_coords()[item]
 
     def get_faces(self):
         # TODO: do it smartly with gray's code.
