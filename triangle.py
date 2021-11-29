@@ -23,7 +23,7 @@ def sort_on_axis(P0, P1, P2, i):
 
 
 def sign(expr):
-    return -1 + (expr > 0) * 2
+    return (1 - (expr == 0)) * (-1 + (expr > 0) * 2)
 
 
 def mark_line_ILV(P0, P1, Q):
@@ -40,6 +40,12 @@ def mark_line_ILV(P0, P1, Q):
     while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
         Lmin = min(L[0], L[1], L[2])
         Lindex = abs((Lmin == L[1]) - (Lmin == L[2]) * 2)
+        if Pcurrent[Lindex] == P1[Lindex]:
+            glurgh = [0, 1, 2]
+            while Pcurrent[Lindex] == P1[Lindex]:
+                glurgh.remove(Lindex)
+                Lmin = L[glurgh[0]]
+                Lindex = glurgh[0]
         Pcurrent[Lindex] = Pcurrent[Lindex] + dP[Lindex]
         L = (np.array(L) - Lmin).tolist()
         L[Lindex] = 2 * M[Lindex]
@@ -151,10 +157,17 @@ class Triangle3D(object):
             i = self.find_dominant_axis()
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
         Q0, Q1, Q2 = [], [], []
+        print("bing")
         mark_line_ILV(P0, P1, Q0)
         mark_line_ILV(P1, P2, Q1)
         mark_line_ILV(P0, P2, Q2)
         Q1 = Q0 + Q1
-        #vlergh = fill_interior(Q1, Q2, P0, P2, i)
-        #print(vlergh)
-        self.voxlist += Q1 + Q2 #+ vlergh
+        print("bang")
+        vlergh = fill_interior(Q1, Q2, P0, P2, i)
+        print(vlergh)
+        self.voxlist += Q1 + Q2 + vlergh
+
+    def trim(self):
+        print(len(self.voxlist))
+        self.voxlist = list(set(self.voxlist))
+        print(len(self.voxlist))
