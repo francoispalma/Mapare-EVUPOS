@@ -55,20 +55,28 @@ def mark_line_ILV(P0, P1, Q):
 
 
 def get_sub_sequence(Q, slice_, axis):
-    VLC = []
-    for blargh in Q:
-        if slice_ - 1 < blargh[axis] < slice_:
-            VLC += [blargh]
+    i = 0
+    while i < len(Q) and Q[i][axis] < slice_:
+        i += 1
+    VLC = Q[:i]
+    Q[:] = Q[i:]
+#    for blargh in Q:
+#        if slice_ - 1 < blargh[axis] < slice_:
+#            VLC += [blargh]
     return VLC
 
 
 def fill_interior(Q1, Q2, P0, P2, axis):
+    Q1c = Q1
+    Q2c = Q2
     Qout = []
     for i in range (P2[axis] - P0[axis] + 1):
+        Pstart = None
+        Pstop = None
         print("beep")
         slice_ = P0[axis] + i + 0.5
-        Q1sub = get_sub_sequence(Q1, slice_, axis)
-        Q2sub = get_sub_sequence(Q2, slice_, axis)
+        Q1sub = get_sub_sequence(Q1c, slice_, axis)
+        Q2sub = get_sub_sequence(Q2c, slice_, axis)
         while Q1sub or Q2sub:
             print("baap")
             if Q1sub:
@@ -76,10 +84,11 @@ def fill_interior(Q1, Q2, P0, P2, axis):
             if Q2sub:
                 Pstop = Q2sub.pop().get_coords()
             print("ding")
-            print(Pstart)
-            print(Pstop)
-            print(slice_)
-            mark_line_ILV(Pstart, Pstop, Qout)
+            if Pstart and Pstop:
+                print(Pstart)
+                print(Pstop)
+                print(slice_)
+                mark_line_ILV(Pstart, Pstop, Qout)
             print("dong")
         print("buup")
     return Qout
@@ -161,11 +170,11 @@ class Triangle3D(object):
         mark_line_ILV(P0, P1, Q0)
         mark_line_ILV(P1, P2, Q1)
         mark_line_ILV(P0, P2, Q2)
-        Q1 = Q0 + Q1
+        #Q1 = Q0 + Q1
         print("bang")
-        vlergh = fill_interior(Q1, Q2, P0, P2, i)
-        print(vlergh)
-        self.voxlist += Q1 + Q2 + vlergh
+        vlergh = fill_interior(Q1, Q2, P1, P2, i)
+        #print(vlergh)
+        self.voxlist += Q0 + Q1 + Q2 + vlergh
 
     def trim(self):
         print(len(self.voxlist))
