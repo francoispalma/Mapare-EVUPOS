@@ -4,17 +4,17 @@ import numpy as np
 
 
 def sort_on_axis(P0, P1, P2, i):
-    if P0[i] < P1[i]:
-        if P0[i] < P2[i]:
-            if P1[i] < P2[i]:
+    if P0[i] <= P1[i]:
+        if P0[i] <= P2[i]:
+            if P1[i] <= P2[i]:
                 return P0, P1, P2
             else:
                 return P0, P2, P1
         else:
             return P2, P0, P1
     else:
-        if P1[i] < P2[i]:
-            if P0[i] < P2[i]:
+        if P1[i] <= P2[i]:
+            if P0[i] <= P2[i]:
                 return P1, P0, P2
             else:
                 return P1, P2, P0
@@ -70,13 +70,17 @@ def fill_interior(Q1, Q2, P0, P2, axis):
     Q1c = Q1
     Q2c = Q2
     Qout = []
+    Pstart = None
+    Pstop = None
     for i in range (P2[axis] - P0[axis] + 1):
-        Pstart = None
-        Pstop = None
         print("beep")
         slice_ = P0[axis] + i + 0.5
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
+        if not Q1sub and not Pstart:
+            Pstart = P0
+        if not Q2sub and not Pstop:
+            Pstop = P2
         while Q1sub or Q2sub:
             print("baap")
             if Q1sub:
@@ -84,11 +88,10 @@ def fill_interior(Q1, Q2, P0, P2, axis):
             if Q2sub:
                 Pstop = Q2sub.pop().get_coords()
             print("ding")
-            if Pstart and Pstop:
-                print(Pstart)
-                print(Pstop)
-                print(slice_)
-                mark_line_ILV(Pstart, Pstop, Qout)
+            print(Pstart)
+            print(Pstop)
+            print(slice_)
+            mark_line_ILV(Pstart, Pstop, Qout)
             print("dong")
         print("buup")
     return Qout
