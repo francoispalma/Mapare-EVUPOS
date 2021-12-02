@@ -23,7 +23,7 @@ def sort_on_axis(P0, P1, P2, i):
 
 
 def sign(expr):
-    return (expr == 0) + -1 + (expr > 0) * 2
+    return -1 + (expr > 0) * 2
 
 
 def get_min(L):
@@ -33,8 +33,6 @@ def get_min(L):
         if L[j] < L[index]:
             mini = L[j]
             index = j
-    if mini < 0:
-        print("AFTER:",mini)
     return mini, index
 
 
@@ -49,15 +47,15 @@ def mark_line_ILV(P0, P1, Q):
     L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
     M = L.copy()
     for i in range(3):
-        M[i] += (M[i] == 0)
+        M[i] += (M[i] == 0)  # Règle certain cas pathologiques
     Pcurrent = P0.copy()
     while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
         Lmin, Lindex = get_min(L)
+        # On s'assure qu'on n'ajoute pas des choses quand il ne faut pas
         Pcurrent[Lindex] += dP[Lindex] * (1 - (Pcurrent[Lindex] == P1[Lindex]))
         L = (np.array(L) - Lmin).tolist()
+        # Pour d'autres cas pathologiques
         L[Lindex] = 2 * M[Lindex] + 65536 * (Pcurrent[Lindex] == P1[Lindex])
-        if L[Lindex] == 0:
-            print("plopplop")
         Q += [Voxel(*Pcurrent)]
 
     return Q
@@ -79,7 +77,6 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis):
     Pstart = None
     Pstop = None
 #    for i in range (P2[axis] - P0[axis] + 1):
-#        print("beep")
 #        slice_ = P0[axis] + i + 0.5
 #        Q1sub = get_sub_sequence(Q1c, slice_, axis)
 #        Q2sub = get_sub_sequence(Q2c, slice_, axis)
@@ -92,18 +89,11 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis):
         Q1sub = Q1c.copy()
         Q2sub = Q2c.copy()
         while Q1sub or Q2sub:
-            print("baap")
             if Q1sub:
                 Pstart = Q1sub.pop().get_coords()
             if Q2sub:
                 Pstop = Q2sub.pop().get_coords()
-            print("ding")
-            print(Pstart)
-            print(Pstop)
-#            print(slice_)
             mark_line_ILV(Pstart, Pstop, Qout)
-            print("dong")
-        print("buup")
     return Qout
 
 
@@ -179,14 +169,11 @@ class Triangle3D(object):
             i = self.find_dominant_axis()
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
         Q0, Q1, Q2 = [], [], []
-        print("bing")
         mark_line_ILV(P0, P1, Q0)
         mark_line_ILV(P1, P2, Q1)
         mark_line_ILV(P0, P2, Q2)
         #Q1 = Q0 + Q1
-        print("bang")
         vlergh = fill_interior(Q2, Q1, P0, P1, P2, i)
-        #print(vlergh)
         self.voxlist += Q0 + Q1 + Q2 + vlergh
 
     def trim(self):

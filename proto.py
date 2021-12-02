@@ -41,9 +41,7 @@ print(A, B, C)
 
 # We construct a triangle from them
 exa = Triangle3D(A, B, C)
-print("dang")
 exa.voxelize_triangle()
-print("boop")
 exa.trim()
 
 exa.normalize()
