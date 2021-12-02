@@ -2,7 +2,6 @@ from OpenGL.GL import *
 from voxel import Voxel
 import numpy as np
 
-
 def sort_on_axis(P0, P1, P2, i):
     if P0[i] <= P1[i]:
         if P0[i] <= P2[i]:
@@ -70,29 +69,48 @@ def get_sub_sequence(Q, slice_, axis):
     return VLC
 
 
+def dist(A, B, x, y):
+    return ((B[x] - A[x]) ** 2 + (B[y] - A[y]) ** 2) ** 0.5
+
+def distA(A, B, x, y, dXAB, dYAB):
+    val = abs(dYAB * (B[x] - A[x]) - dXAB * (B[y] - A[y]))
+    return val / (dXAB ** 2 + dYAB ** 2 + (dXAB == 0 and dYAB == 0))
+
+def get_next_in_slice(P0, Q, endP, axis):
+    if not Q:
+        return P0
+    axes = [0, 1, 2]
+    axes.remove(axis)
+    X = axes[0]
+    Y = axes[1]
+    dXAB = endP[X] - P0[X]
+    dYAB = endP[Y] - P0[Y]
+    # TODO: passer en entier
+    dchapeau = (abs(dXAB) + abs(dYAB)) / ((dXAB ** 2 + dYAB ** 2) ** 0.5 + (dXAB == 0 and dYAB == 0))
+    currP = Q[0]
+    # Cas pathologique:
+    if Q and currP[0] == P0[0] and currP[1] == P0[1] and currP[2] == P0[2]:
+        Q.pop()
+    while len(Q) > 1 and dist(P0, Q[1], X, Y) < dchapeau:
+        Q.pop()
+    
+    return Q.pop().get_coords()
+
+
 def fill_interior(Q1, Q2, P0, P1, P2, axis):
-    Q1c = Q1
-    Q2c = Q2
+    Q1c = Q1.copy()
+    Q2c = Q2.copy()
     Qout = []
-    Pstart = None
-    Pstop = None
-#    for i in range (P2[axis] - P0[axis] + 1):
-#        slice_ = P0[axis] + i + 0.5
-#        Q1sub = get_sub_sequence(Q1c, slice_, axis)
-#        Q2sub = get_sub_sequence(Q2c, slice_, axis)
-#        if not Q1sub and not Pstart:
-#            Pstart = P0
-#        if not Q2sub and not Pstop:
-#            Pstop = P1
-#        while Q1sub or Q2sub:
-    if True:
-        Q1sub = Q1c.copy()
-        Q2sub = Q2c.copy()
+    Pstart = P0
+    Pstop = P1
+    for i in range (P2[axis] - P0[axis] + 1):
+        slice_ = P0[axis] + i + 0.5
+        Q1sub = get_sub_sequence(Q1c, slice_, axis)
+        Q2sub = get_sub_sequence(Q2c, slice_, axis)
         while Q1sub or Q2sub:
-            if Q1sub:
-                Pstart = Q1sub.pop().get_coords()
-            if Q2sub:
-                Pstop = Q2sub.pop().get_coords()
+            tmp = get_next_in_slice(Pstart, Q1sub, Pstop, axis)
+            Pstop = get_next_in_slice(Pstop, Q2sub, Pstart, axis)
+            Pstart = tmp
             mark_line_ILV(Pstart, Pstop, Qout)
     return Qout
 
