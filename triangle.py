@@ -23,7 +23,19 @@ def sort_on_axis(P0, P1, P2, i):
 
 
 def sign(expr):
-    return (1 - (expr == 0)) * (-1 + (expr > 0) * 2)
+    return (expr == 0) + -1 + (expr > 0) * 2
+
+
+def get_min(L):
+    mini = L[0]
+    index = 0
+    for j in range(1, 3):
+        if L[j] < L[index]:
+            mini = L[j]
+            index = j
+    if mini < 0:
+        print("AFTER:",mini)
+    return mini, index
 
 
 def mark_line_ILV(P0, P1, Q):
@@ -36,19 +48,16 @@ def mark_line_ILV(P0, P1, Q):
     L += [abs(P1[0] - P0[0]) * abs(P1[2] - P0[2])]
     L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
     M = L.copy()
+    for i in range(3):
+        M[i] += (M[i] == 0)
     Pcurrent = P0.copy()
     while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
-        Lmin = min(L[0], L[1], L[2])
-        Lindex = abs((Lmin == L[1]) - (Lmin == L[2]) * 2)
-        if Pcurrent[Lindex] == P1[Lindex]:
-            glurgh = [0, 1, 2]
-            while Pcurrent[Lindex] == P1[Lindex]:
-                glurgh.remove(Lindex)
-                Lmin = L[glurgh[0]]
-                Lindex = glurgh[0]
-        Pcurrent[Lindex] = Pcurrent[Lindex] + dP[Lindex]
+        Lmin, Lindex = get_min(L)
+        Pcurrent[Lindex] += dP[Lindex] * (1 - (Pcurrent[Lindex] == P1[Lindex]))
         L = (np.array(L) - Lmin).tolist()
-        L[Lindex] = 2 * M[Lindex]
+        L[Lindex] = 2 * M[Lindex] + 65536 * (Pcurrent[Lindex] == P1[Lindex])
+        if L[Lindex] == 0:
+            print("plopplop")
         Q += [Voxel(*Pcurrent)]
 
     return Q
@@ -60,27 +69,28 @@ def get_sub_sequence(Q, slice_, axis):
         i += 1
     VLC = Q[:i]
     Q[:] = Q[i:]
-#    for blargh in Q:
-#        if slice_ - 1 < blargh[axis] < slice_:
-#            VLC += [blargh]
     return VLC
 
 
-def fill_interior(Q1, Q2, P0, P2, axis):
+def fill_interior(Q1, Q2, P0, P1, P2, axis):
     Q1c = Q1
     Q2c = Q2
     Qout = []
     Pstart = None
     Pstop = None
-    for i in range (P2[axis] - P0[axis] + 1):
-        print("beep")
-        slice_ = P0[axis] + i + 0.5
-        Q1sub = get_sub_sequence(Q1c, slice_, axis)
-        Q2sub = get_sub_sequence(Q2c, slice_, axis)
-        if not Q1sub and not Pstart:
-            Pstart = P0
-        if not Q2sub and not Pstop:
-            Pstop = P2
+#    for i in range (P2[axis] - P0[axis] + 1):
+#        print("beep")
+#        slice_ = P0[axis] + i + 0.5
+#        Q1sub = get_sub_sequence(Q1c, slice_, axis)
+#        Q2sub = get_sub_sequence(Q2c, slice_, axis)
+#        if not Q1sub and not Pstart:
+#            Pstart = P0
+#        if not Q2sub and not Pstop:
+#            Pstop = P1
+#        while Q1sub or Q2sub:
+    if True:
+        Q1sub = Q1c.copy()
+        Q2sub = Q2c.copy()
         while Q1sub or Q2sub:
             print("baap")
             if Q1sub:
@@ -90,7 +100,7 @@ def fill_interior(Q1, Q2, P0, P2, axis):
             print("ding")
             print(Pstart)
             print(Pstop)
-            print(slice_)
+#            print(slice_)
             mark_line_ILV(Pstart, Pstop, Qout)
             print("dong")
         print("buup")
@@ -175,7 +185,7 @@ class Triangle3D(object):
         mark_line_ILV(P0, P2, Q2)
         #Q1 = Q0 + Q1
         print("bang")
-        vlergh = fill_interior(Q1, Q2, P1, P2, i)
+        vlergh = fill_interior(Q2, Q1, P0, P1, P2, i)
         #print(vlergh)
         self.voxlist += Q0 + Q1 + Q2 + vlergh
 
