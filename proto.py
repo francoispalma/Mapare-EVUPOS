@@ -71,13 +71,13 @@ def key_pressed(*args):
     if args[0] == b'e':
         Z_AXIS += CONST_ROT
     elif args[0] == b'r':
-        X_AXIS += CONST_ROT
+        X_AXIS -= CONST_ROT
     elif args[0] == b't':
         Z_AXIS -= CONST_ROT
     elif args[0] == b'd':
         Y_AXIS += CONST_ROT
     elif args[0] == b'f':
-        X_AXIS -= CONST_ROT
+        X_AXIS += CONST_ROT
     elif args[0] == b'g':
         Y_AXIS -= CONST_ROT
     elif args[0] == b'+':

@@ -42,7 +42,7 @@ def get_min(L):
     return mini, index
 
 
-def mark_line_ILV(P0, P1, Q):
+def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
     """Function that marks a line of voxels between P0 and P1, putting it in Q.
     """
     dP = []
@@ -65,7 +65,7 @@ def mark_line_ILV(P0, P1, Q):
             Pcurrent[Lindex] += dP[Lindex]
             L = (np.array(L) - Lmin).tolist()
             L[Lindex] = 2 * M[Lindex]
-            Q += [Voxel(*Pcurrent)]
+            Q += [Voxel(*Pcurrent, color)]
 
     return Q
 
@@ -127,6 +127,7 @@ def get_next_in_slice(P0, Q, endP, axis):
 def fill_interior(Q1, Q2, P0, P1, P2, axis):
     """Function that voxelizes the interior of the triangle P0P1P2.
     """
+    compteur = 0
     Q1c = Q1.copy()
     Q2c = Q2.copy()
     Qout = []
@@ -141,6 +142,9 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis):
             Pstop = get_next_in_slice(Pstop, Q2sub, Pstart, axis)
             Pstart = tmp
             mark_line_ILV(Pstart, Pstop, Qout)
+            compteur += 1
+        if compteur > 50:
+            break
     return Qout
 
 
@@ -216,13 +220,17 @@ class Triangle3D(object):
             i = self.find_dominant_axis()
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
         Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
-        mark_line_ILV(P0, P1, Q0)
-        mark_line_ILV(P1, P2, Q1)
-        mark_line_ILV(P0, P2, Q2)
+        Q3 = []
+        Pa = P0.copy()
+        Pa[i] = P2[i]
+        mark_line_ILV(P0, P1, Q0, (0, 0, 1))
+        mark_line_ILV(P1, P2, Q1, (0, 0, 1))
+        mark_line_ILV(P0, P2, Q2, (0, 0, 1))
+        mark_line_ILV(P0, Pa, Q3, (1, 1, 0))
         Q2 += [Voxel(*P2)]
         Q1 = Q0 + Q1 + [Voxel(*P2)]
         vlergh = fill_interior(Q1, Q2, P0, P1, P2, i)
-        self.voxlist += Q1 + Q2 + vlergh
+        self.voxlist += Q1 + Q2 + vlergh + Q3
 
     def trim(self):
         print(len(self.voxlist))
