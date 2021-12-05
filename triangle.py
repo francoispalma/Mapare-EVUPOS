@@ -55,22 +55,14 @@ def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
     L += [abs(P1[0] - P0[0]) * abs(P1[2] - P0[2])]
     L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
     M = L.copy()
-    for i in range(3):
-        if M[i] == 0:
-            print(P0, P1, M)
-        M[i] += (M[i] == 0)
 
     Pcurrent = P0.copy()
     while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
         Lmin, Lindex = get_min(L)
-        if Pcurrent[Lindex] == P1[Lindex]:  # We do this for some problem cases.
-            L[Lindex] += 65536
-            color = (0, 1, 1)
-        else:
-            Pcurrent[Lindex] += dP[Lindex]
-            L = (np.array(L) - Lmin).tolist()
-            L[Lindex] = 2 * M[Lindex]
-            Q += [Voxel(*Pcurrent, color)]
+        Pcurrent[Lindex] += dP[Lindex]
+        L = (np.array(L) - Lmin).tolist()
+        L[Lindex] = 2 * M[Lindex]
+        Q += [Voxel(*Pcurrent, color)]
 
     return Q
 
@@ -123,18 +115,6 @@ def get_sub_sequence(Q, slice_, axis):
     return VLC
 
 
-#def dist(A, B, x, y):
-#    return ((B[x] - A[x]) ** 2 + (B[y] - A[y]) ** 2) ** 0.5
-
-def distA(A, B, x, y, dXAB, dYAB):
-    """Function that returns the distance between B and the previous scanline.
-    """
-    if dXAB == 0 and dYAB == 0:
-        return 0
-    else:
-        val = abs(dYAB * (B[x] - A[x]) - dXAB * (B[y] - A[y]))
-        return val / (dXAB ** 2 + dYAB ** 2)
-
 def get_next_in_slice(P0, Q, endP, axis):
     """Function that determines the next voxel for the subsequence Q.
     """
@@ -152,16 +132,19 @@ def get_next_in_slice(P0, Q, endP, axis):
     dXAB = endP[X] - P0[X]
     dYAB = endP[Y] - P0[Y]
 
-    if dXAB == 0 and dYAB == 0:
-        dchapeau = 0
-    else:
-        # TODO: switch to integer calculations instead.
-        dchapeau = (abs(dXAB) + abs(dYAB)) / ((dXAB ** 2 + dYAB ** 2) ** 0.5)
+    C0 = dYAB * P0[X] - dXAB * P0[Y]
+    C1 = C0 - abs(dXAB) - abs(dYAB)
+    C2 = C0 + abs(dXAB) - abs(dYAB)
+    C0 += dXAB * sign(Q[0][X] - P0[X]) + dYAB * sign(Q[0][Y] - P0[Y])
 
-    while len(Q) > 1 and distA(P0, Q[1], X, Y, dXAB, dYAB) < dchapeau:
-        Q.pop(0)
-    
-    return Q.pop(0).get_coords()
+    if len(Q) > 1 and C1 <= C0 <= C2:
+        while len(Q) > 1 and C1 <= C0 <= C2:
+            C0 += dXAB * sign(Q[1][X] - P0[X]) + dYAB * sign(Q[1][Y] - P0[Y])
+            stock = Q.pop(0)
+    else:
+        stock = Q.pop(0)
+
+    return stock.get_coords()
 
 
 def fill_interior(Q1, Q2, P0, P1, P2, axis):
@@ -261,17 +244,13 @@ class Triangle3D(object):
             i = self.find_dominant_axis()
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
         Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
-        Q3 = []
-        Pa = P0.copy()
-        Pa[i] = P2[i]
         mark_line_ILV(P0, P1, Q0, (0, 0, 1))
         mark_line_ILV(P1, P2, Q1, (0, 0, 1))
         mark_line_ILV(P0, P2, Q2, (0, 0, 1))
-        mark_line_ILV(P0, Pa, Q3, (1, 1, 0))
         Q2 += [Voxel(*P2)]
         Q1 = Q0 + Q1 + [Voxel(*P2)]
-        vlergh = fill_interior(Q1, Q2, P0, P1, P2, i)
-        self.voxlist += Q1 + Q2 + vlergh + Q3
+        interior = fill_interior(Q1, Q2, P0, P1, P2, i)
+        self.voxlist += Q1 + Q2 + interior
 
     def trim(self):
         print(len(self.voxlist))
