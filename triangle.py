@@ -25,9 +25,9 @@ def sort_on_axis(P0, P1, P2, i):
 
 
 def sign(expr):
-    """Function that returns the sign of the expression expr. 0 returns -1.
+    """Function that returns the sign of the expression expr. 0 returns 0.
     """
-    return -1 + (expr > 0) * 2
+    return -1 + (expr > 0) * 2 + (expr == 0)
 
 
 def get_min(L):
@@ -55,17 +55,57 @@ def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
     L += [abs(P1[0] - P0[0]) * abs(P1[2] - P0[2])]
     L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
     M = L.copy()
+    for i in range(3):
+        if M[i] == 0:
+            print(P0, P1, M)
+        M[i] += (M[i] == 0)
 
     Pcurrent = P0.copy()
     while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
         Lmin, Lindex = get_min(L)
         if Pcurrent[Lindex] == P1[Lindex]:  # We do this for some problem cases.
             L[Lindex] += 65536
+            color = (0, 1, 1)
         else:
             Pcurrent[Lindex] += dP[Lindex]
             L = (np.array(L) - Lmin).tolist()
             L[Lindex] = 2 * M[Lindex]
             Q += [Voxel(*Pcurrent, color)]
+
+    return Q
+
+
+def bresenham(P0, P1, Q, axis):
+    """Bresenham's algorithm for the 2D case to mark the P0 to P1 line.
+    """
+    axes = [0, 1, 2]
+    axes.remove(axis)
+    X = axes[0]
+    Y = axes[1]
+    dx = P1[X] - P0[X]
+    sx = sign(dx)
+    dx = abs(dx)
+    dy = P1[Y] - P0[Y]
+    sy = sign(dy)
+    dy = -abs(dy)
+    err = dx + dy
+
+    Pcurrent = P0.copy()
+    while Pcurrent[X] != P1[X] or Pcurrent[Y] != P1[Y]:
+        e2 = 2 * err
+
+        ytest = e2 >= dy
+        err += ytest * dy
+        Pcurrent[X] += ytest * sx
+
+        xtest = e2 <= dx
+        err += xtest * dx
+        Pcurrent[Y] += xtest * sy
+
+        Q += [Voxel(*Pcurrent)]
+
+    if Q:  # We remove the last one as it should be P1 which we already have.
+        Q.pop()
 
     return Q
 
@@ -141,10 +181,11 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis):
             tmp = get_next_in_slice(Pstart, Q1sub, Pstop, axis)
             Pstop = get_next_in_slice(Pstop, Q2sub, Pstart, axis)
             Pstart = tmp
-            mark_line_ILV(Pstart, Pstop, Qout)
+            #mark_line_ILV(Pstart, Pstop, Qout)
+            bresenham(Pstart, Pstop, Qout, axis)
             compteur += 1
-        if compteur > 50:
-            break
+#        if compteur > 50:
+#            break
     return Qout
 
 
