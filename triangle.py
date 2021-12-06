@@ -42,32 +42,7 @@ def get_min(L):
     return mini, index
 
 
-def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
-    """Function that marks a line of voxels between P0 and P1, putting it in Q.
-    """
-    dP = []
-    dP += [sign(P1[0] -  P0[0])]
-    dP += [sign(P1[1] -  P0[1])]
-    dP += [sign(P1[2] -  P0[2])]
-
-    L = []
-    L += [abs(P1[1] - P0[1]) * abs(P1[2] - P0[2])]
-    L += [abs(P1[0] - P0[0]) * abs(P1[2] - P0[2])]
-    L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
-    M = L.copy()
-
-    Pcurrent = P0.copy()
-    while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
-        Lmin, Lindex = get_min(L)
-        Pcurrent[Lindex] += dP[Lindex]
-        L = (np.array(L) - Lmin).tolist()
-        L[Lindex] = 2 * M[Lindex]
-        Q += [Voxel(*Pcurrent, color)]
-
-    return Q
-
-
-def bresenham(P0, P1, Q, axis):
+def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
     """Bresenham's algorithm for the 2D case to mark the P0 to P1 line.
     """
     axes = [0, 1, 2]
@@ -94,10 +69,44 @@ def bresenham(P0, P1, Q, axis):
         err += xtest * dx
         Pcurrent[Y] += xtest * sy
 
-        Q += [Voxel(*Pcurrent)]
+        Q += [Voxel(*Pcurrent, color)]
 
     if Q:  # We remove the last one as it should be P1 which we already have.
         Q.pop()
+
+    return Q
+
+
+def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
+    """Function that marks a line of voxels between P0 and P1, putting it in Q.
+    """
+    dP = []
+    dP += [sign(P1[0] -  P0[0])]
+    dP += [sign(P1[1] -  P0[1])]
+    dP += [sign(P1[2] -  P0[2])]
+
+    # We test the 2D case.
+    axis = None
+    for i in range(3):
+        if dP[i] == 0:
+            axis = i
+            break
+    if axis is not None:
+        return bresenham(P0, P1, Q, axis, color)
+
+    L = []
+    L += [abs(P1[1] - P0[1]) * abs(P1[2] - P0[2])]
+    L += [abs(P1[0] - P0[0]) * abs(P1[2] - P0[2])]
+    L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
+    M = L.copy()
+
+    Pcurrent = P0.copy()
+    while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
+        Lmin, Lindex = get_min(L)
+        Pcurrent[Lindex] += dP[Lindex]
+        L = (np.array(L) - Lmin).tolist()
+        L[Lindex] = 2 * M[Lindex]
+        Q += [Voxel(*Pcurrent, color)]
 
     return Q
 
@@ -150,13 +159,14 @@ def get_next_in_slice(P0, Q, endP, axis):
 def fill_interior(Q1, Q2, P0, P1, P2, axis):
     """Function that voxelizes the interior of the triangle P0P1P2.
     """
-    compteur = 0
+    maxi = max(len(Q1), len(Q2)) + P2[axis] - P0[axis] + 1
+    compteur = 1
     Q1c = Q1.copy()
     Q2c = Q2.copy()
     Qout = []
     Pstart = Q1c.pop(0)
     Pstop = Q2c.pop(0)
-    for i in range (P2[axis] - P0[axis] + 1):
+    for i in range (P2[axis] - P0[axis]):
         slice_ = P0[axis] + i + 0.5
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
@@ -164,11 +174,8 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis):
             tmp = get_next_in_slice(Pstart, Q1sub, Pstop, axis)
             Pstop = get_next_in_slice(Pstop, Q2sub, Pstart, axis)
             Pstart = tmp
-            #mark_line_ILV(Pstart, Pstop, Qout)
-            bresenham(Pstart, Pstop, Qout, axis)
+            mark_line_ILV(Pstart, Pstop, Qout, (0, compteur / maxi, 0))
             compteur += 1
-#        if compteur > 50:
-#            break
     return Qout
 
 
@@ -238,19 +245,16 @@ class Triangle3D(object):
 
     def voxelize_triangle(self):
         P0, P1, P2 = self.s1, self.s2, self.s3
-        if self._dominant_axis is not None:
-            i = self._dominant_axis
-        else:
-            i = self.find_dominant_axis()
+        i = self.find_dominant_axis()
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
         Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
         mark_line_ILV(P0, P1, Q0, (0, 0, 1))
-        mark_line_ILV(P1, P2, Q1, (0, 0, 1))
-        mark_line_ILV(P0, P2, Q2, (0, 0, 1))
+        mark_line_ILV(P1, P2, Q1, (0, 1, 1))
+        mark_line_ILV(P0, P2, Q2, (1, 1, 0))
         Q2 += [Voxel(*P2)]
-        Q1 = Q0 + Q1 + [Voxel(*P2)]
-        interior = fill_interior(Q1, Q2, P0, P1, P2, i)
-        self.voxlist += Q1 + Q2 + interior
+        Q1 = Q1 + [Voxel(*P2)]
+        interior = fill_interior(Q2, Q1, P0, P1, P2, i)
+        self.voxlist += Q0 + Q1 + Q2 + interior
 
     def trim(self):
         print(len(self.voxlist))
