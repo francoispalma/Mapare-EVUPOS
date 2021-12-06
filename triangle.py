@@ -143,12 +143,12 @@ def get_next_in_slice(P0, Q, endP, axis):
 
     C0 = dYAB * P0[X] - dXAB * P0[Y]
     C1 = C0 - abs(dXAB) - abs(dYAB)
-    C2 = C0 + abs(dXAB) - abs(dYAB)
+    C2 = C0 + abs(dXAB) + abs(dYAB)
     C0 += dXAB * sign(Q[0][X] - P0[X]) + dYAB * sign(Q[0][Y] - P0[Y])
 
     if len(Q) > 1 and C1 <= C0 <= C2:
         while len(Q) > 1 and C1 <= C0 <= C2:
-            C0 += dXAB * sign(Q[1][X] - P0[X]) + dYAB * sign(Q[1][Y] - P0[Y])
+            C0 += dYAB * sign(Q[1][X] - Q[0][X]) + dXAB * sign(Q[1][Y] - Q[0][Y])
             stock = Q.pop(0)
     else:
         stock = Q.pop(0)
@@ -159,8 +159,8 @@ def get_next_in_slice(P0, Q, endP, axis):
 def fill_interior(Q1, Q2, P0, P1, P2, axis):
     """Function that voxelizes the interior of the triangle P0P1P2.
     """
-    maxi = max(len(Q1), len(Q2)) + P2[axis] - P0[axis] + 1
-    compteur = 1
+    maxi = max(len(Q1), len(Q2))
+    compteur = maxi / 20
     Q1c = Q1.copy()
     Q2c = Q2.copy()
     Qout = []
@@ -170,7 +170,7 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis):
         slice_ = P0[axis] + i + 0.5
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
-        while Q1sub or Q2sub:
+        while Q1sub and Q2sub:
             tmp = get_next_in_slice(Pstart, Q1sub, Pstop, axis)
             Pstop = get_next_in_slice(Pstop, Q2sub, Pstart, axis)
             Pstart = tmp
@@ -252,11 +252,11 @@ class Triangle3D(object):
         mark_line_ILV(P1, P2, Q1, (0, 1, 1))
         mark_line_ILV(P0, P2, Q2, (1, 1, 0))
         Q2 += [Voxel(*P2)]
-        Q1 = Q1 + [Voxel(*P2)]
-        interior = fill_interior(Q2, Q1, P0, P1, P2, i)
-        self.voxlist += Q0 + Q1 + Q2 + interior
+        Q1 = Q0 + Q1 + [Voxel(*P2)]
+        interior = fill_interior(Q1, Q2, P0, P1, P2, i)
+        self.voxlist += Q1 + Q2 + interior
 
     def trim(self):
-        print(len(self.voxlist))
+        #print(len(self.voxlist))
         self.voxlist = list(set(self.voxlist))
-        print(len(self.voxlist))
+        #print(len(self.voxlist))

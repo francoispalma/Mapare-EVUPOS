@@ -32,6 +32,23 @@ def get_coord():
     return randrange(201) - 100
 
 
+# Trim demo
+presum = 0
+aftsum = 0
+for i in range(100):
+    A, B, C = [get_coord(), get_coord(), get_coord()], \
+              [get_coord(), get_coord(), get_coord()], \
+              [get_coord(), get_coord(), get_coord()]
+    tmp = Triangle3D(A, B, C)
+    tmp.voxelize_triangle()
+    presum += len(tmp.voxlist)
+    tmp.trim()
+    aftsum += len(tmp.voxlist)
+
+print(aftsum/presum)
+
+
+
 # Get three random vertices for the demo
 A, B, C = [get_coord(), get_coord(), get_coord()], \
           [get_coord(), get_coord(), get_coord()], \

@@ -25,6 +25,9 @@ class Voxel(object):
     def __eq__(self, other):
         return self.coord_x == other.coord_x and self.coord_y == other.coord_y and self.coord_z == other.coord_z
 
+    def copy(self):
+        return self.get_coords().copy()
+
     def get_faces(self):
         # TODO: do it smartly with gray's code.
         faces = []
