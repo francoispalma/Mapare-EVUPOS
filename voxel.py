@@ -81,3 +81,32 @@ class Voxel(object):
         self.coord_x /= maqs
         self.coord_y /= maqs
         self.coord_z /= maqs
+
+
+class Voxelmatrix(object):
+    def __init__(self, s1, s2, s3):
+        self._minx = min(s1[0], s2[0], s3[0])
+        self._miny = min(s1[1], s2[1], s3[1])
+        self._minz = min(s1[2], s2[2], s3[2])
+        X = max(s1[0], s2[0], s3[0]) - min(s1[0], s2[0], s3[0]) + 1
+        Y = max(s1[1], s2[1], s3[1]) - min(s1[1], s2[1], s3[1]) + 1
+        Z = max(s1[2], s2[2], s3[2]) - min(s1[2], s2[2], s3[2]) + 1
+        self._s1 = s1
+        self._s2 = s2
+        self._s3 = s3
+        self._X = X
+        self._Y = Y
+        self._Z = Z
+        self.m = [[[0] * Z for i in range(Y)] for j in range(X)]
+
+    def __contains__(self, Vox):
+        return self.m[Vox[0] - self._minx][Vox[1] - self._miny][Vox[2] - self._minz] >= 1
+
+    def __repr__(self):
+        return self.m.__repr__()
+
+    def __getitem__(self, item):
+        return self.m[item[0] - self._minx][item[1] - self._miny][item[2] - self._minz]
+
+    def hit(self, x, y, z):
+        self.m[x - self._minx][y - self._miny][z - self._minz] += 1

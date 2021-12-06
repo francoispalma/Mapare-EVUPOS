@@ -1,5 +1,5 @@
 from OpenGL.GL import *
-from voxel import Voxel
+from voxel import Voxel, Voxelmatrix
 import numpy as np
 
 
@@ -42,7 +42,7 @@ def get_min(L):
     return mini, index
 
 
-def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
+def bresenham(P0, P1, Q, axis, vm, color=(0, 1, 0)):
     """Bresenham's algorithm for the 2D case to mark the P0 to P1 line.
     """
     axes = [0, 1, 2]
@@ -69,7 +69,9 @@ def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
         err += xtest * dx
         Pcurrent[Y] += xtest * sy
 
-        Q += [Voxel(*Pcurrent, color)]
+        if Pcurrent not in vm:
+            Q += [Voxel(*Pcurrent, color)]
+        vm.hit(*Pcurrent)
 
     if Q:  # We remove the last one as it should be P1 which we already have.
         Q.pop()
@@ -77,7 +79,7 @@ def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
     return Q
 
 
-def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
+def mark_line_ILV(P0, P1, Q, vm, color=(0, 1, 0)):
     """Function that marks a line of voxels between P0 and P1, putting it in Q.
     """
     dP = []
@@ -92,7 +94,7 @@ def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
             axis = i
             break
     if axis is not None:
-        return bresenham(P0, P1, Q, axis, color)
+        return bresenham(P0, P1, Q, axis, vm, color)
 
     L = []
     L += [abs(P1[1] - P0[1]) * abs(P1[2] - P0[2])]
@@ -106,7 +108,9 @@ def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
         Pcurrent[Lindex] += dP[Lindex]
         L = (np.array(L) - Lmin).tolist()
         L[Lindex] = 2 * M[Lindex]
-        Q += [Voxel(*Pcurrent, color)]
+        if Pcurrent not in vm:
+            Q += [Voxel(*Pcurrent, color)]
+        vm.hit(*Pcurrent)
 
     return Q
 
@@ -156,7 +160,7 @@ def get_next_in_slice(P0, Q, endP, axis):
     return stock.get_coords()
 
 
-def fill_interior(Q1, Q2, P0, P1, P2, axis):
+def fill_interior(Q1, Q2, P0, P1, P2, axis, vm):
     """Function that voxelizes the interior of the triangle P0P1P2.
     """
     maxi = max(len(Q1), len(Q2))
@@ -174,7 +178,7 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis):
             tmp = get_next_in_slice(Pstart, Q1sub, Pstop, axis)
             Pstop = get_next_in_slice(Pstop, Q2sub, Pstart, axis)
             Pstart = tmp
-            mark_line_ILV(Pstart, Pstop, Qout, (0, compteur / maxi, 0))
+            mark_line_ILV(Pstart, Pstop, Qout, vm, (0, compteur / maxi, 0))
             compteur += 1
     return Qout
 
@@ -187,6 +191,8 @@ class Triangle3D(object):
         self.color = color
         self.voxlist = []
         self._dominant_axis = None
+
+        self._voxmatrix = Voxelmatrix(s1, s2, s3)
 
     def __repr__(self):
         return f'Triangle3D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3}, color:{self.color}, voxlist:{self.voxlist})'
@@ -248,15 +254,16 @@ class Triangle3D(object):
         i = self.find_dominant_axis()
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
         Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
-        mark_line_ILV(P0, P1, Q0, (0, 0, 1))
-        mark_line_ILV(P1, P2, Q1, (0, 1, 1))
-        mark_line_ILV(P0, P2, Q2, (1, 1, 0))
+        self._voxmatrix.hit(*P0)
+        self._voxmatrix.hit(*P1)
+        self._voxmatrix.hit(*P2)
+        mark_line_ILV(P0, P1, Q0, self._voxmatrix, (0, 0, 1))
+        mark_line_ILV(P1, P2, Q1, self._voxmatrix, (0, 1, 1))
+        mark_line_ILV(P0, P2, Q2, self._voxmatrix, (1, 1, 0))
         Q2 += [Voxel(*P2)]
         Q1 = Q0 + Q1 + [Voxel(*P2)]
-        interior = fill_interior(Q1, Q2, P0, P1, P2, i)
-        self.voxlist += Q1 + Q2 + interior
+        interior = fill_interior(Q1, Q2, P0, P1, P2, i, self._voxmatrix)
+        self.voxlist += Q1[1:] + Q2[:-1] + interior
 
     def trim(self):
-        #print(len(self.voxlist))
         self.voxlist = list(set(self.voxlist))
-        #print(len(self.voxlist))
