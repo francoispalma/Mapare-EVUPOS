@@ -1,3 +1,5 @@
+# -*- mode: python; indent-tabs-mode: nil; tab-width: 4 -*-
+
 from random import randrange
 import sys
 
