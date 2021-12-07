@@ -3,6 +3,8 @@
 from OpenGL.GL import *
 from voxel import Voxel, Voxelmatrix
 import numpy as np
+from collections import deque
+from itertools import islice
 
 
 def sort_on_axis(P0, P1, P2, i):
@@ -120,13 +122,10 @@ def mark_line_ILV(P0, P1, Q, vm, color=(0, 1, 0)):
 def get_sub_sequence(Q, slice_, axis):
     """Function that returns a slice of Q with a specific coordinate on axis.
     """
-    i = 0
-    while i < len(Q) and Q[i][axis] < slice_:
-        i += 1
-    VLC = Q[:i]
-    
-    # We remove the sequence for the next iteration.
-    Q[:] = Q[i:]
+    VLC = deque()
+    while Q and Q[0][axis] < slice_:
+        VLC += [Q.popleft()]
+
     return VLC
 
 
@@ -155,9 +154,9 @@ def get_next_in_slice(P0, Q, endP, axis):
     if len(Q) > 1 and C1 <= C0 <= C2:
         while len(Q) > 1 and C1 <= C0 <= C2:
             C0 += dYAB * sign(Q[1][X] - Q[0][X]) + dXAB * sign(Q[1][Y] - Q[0][Y])
-            stock = Q.pop(0)
+            stock = Q.popleft()
     else:
-        stock = Q.pop(0)
+        stock = Q.popleft()
 
     return stock.get_coords()
 
@@ -169,9 +168,9 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis, vm):
     compteur = maxi / 20
     Q1c = Q1.copy()
     Q2c = Q2.copy()
-    Qout = []
-    Pstart = Q1c.pop(0)
-    Pstop = Q2c.pop(0)
+    Qout = deque()
+    Pstart = Q1c.popleft()
+    Pstop = Q2c.popleft()
     for i in range (P2[axis] - P0[axis]):
         slice_ = P0[axis] + i + 0.5
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
@@ -255,7 +254,7 @@ class Triangle3D(object):
         P0, P1, P2 = self.s1, self.s2, self.s3
         i = self.find_dominant_axis()
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
-        Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
+        Q0, Q1, Q2 = deque([Voxel(*P0)]), deque([Voxel(*P1)]), deque([Voxel(*P0)])
         self._voxmatrix.hit(*P0)
         self._voxmatrix.hit(*P1)
         self._voxmatrix.hit(*P2)
@@ -263,9 +262,11 @@ class Triangle3D(object):
         mark_line_ILV(P1, P2, Q1, self._voxmatrix, (0, 1, 1))
         mark_line_ILV(P0, P2, Q2, self._voxmatrix, (1, 1, 0))
         Q2 += [Voxel(*P2)]
-        Q1 = Q0 + Q1 + [Voxel(*P2)]
+        Q1 = Q0 + Q1 + deque([Voxel(*P2)])
         interior = fill_interior(Q1, Q2, P0, P1, P2, i, self._voxmatrix)
-        self.voxlist += Q1[1:] + Q2[:-1] + interior
+        Q1.popleft()
+        Q2.pop()
+        self.voxlist += Q1 + Q2 + interior
 
     def trim(self):
         self.voxlist = list(set(self.voxlist))
