@@ -10,27 +10,22 @@ from itertools import islice
 def sort_on_axis(P0, P1, P2, i):
     """Function that sorts P0, P1 and P2 along the i axis.
     """
-    # TODO: evaluate properly
-    s0 = [P[j] for P in (P0, P1, P2) if P[i] == min(P0[i], P1[i], P2[i]) for j in range(3)][:3]
-    s2 = [P[j] for P in (P0, P1, P2) if P[i] == max(P2[i], P1[i], P0[i]) for j in range(3)][:3]
-    s1 = [sum(P[j] for P in (P0, P1, P2)) - s0[j] - s2[j] for j in range(3)]
-    return s0, s1, s2
-#    if P0[i] <= P1[i]:
-#        if P0[i] <= P2[i]:
-#            if P1[i] <= P2[i]:
-#                return P0, P1, P2
-#            else:
-#                return P0, P2, P1
-#        else:
-#            return P2, P0, P1
-#    else:
-#        if P1[i] <= P2[i]:
-#            if P0[i] <= P2[i]:
-#                return P1, P0, P2
-#            else:
-#                return P1, P2, P0
-#        else:
-#            return P2, P1, P0
+    if P0[i] <= P1[i]:
+        if P0[i] <= P2[i]:
+            if P1[i] <= P2[i]:
+                return P0, P1, P2
+            else:
+                return P0, P2, P1
+        else:
+            return P2, P0, P1
+    else:
+        if P1[i] <= P2[i]:
+            if P0[i] <= P2[i]:
+                return P1, P0, P2
+            else:
+                return P1, P2, P0
+        else:
+            return P2, P1, P0
 
 
 def sign(expr):
@@ -265,6 +260,7 @@ class Triangle3D(object):
         Q0, Q1, Q2 = deque([Voxel(*P0)]), deque([Voxel(*P1)]), deque([Voxel(*P0)])
         self._voxmatrix.hit(*P0)
         self._voxmatrix.hit(*P1)
+        self._voxmatrix.hit(*P2)
         mark_line_ILV(P0, P1, Q0, self._voxmatrix, (0, 0, 1))
         mark_line_ILV(P1, P2, Q1, self._voxmatrix, (0, 1, 1))
         mark_line_ILV(P0, P2, Q2, self._voxmatrix, (1, 1, 0))
