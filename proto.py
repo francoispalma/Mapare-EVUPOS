@@ -39,7 +39,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "demo":
     # Trim demo
     presum = 0
     aftsum = 0
-    for i in range(1000):
+    for i in range(500):
         A, B, C = [get_coord(), get_coord(), get_coord()], \
                   [get_coord(), get_coord(), get_coord()], \
                   [get_coord(), get_coord(), get_coord()]
