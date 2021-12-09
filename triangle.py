@@ -77,8 +77,8 @@ def bresenham(P0, P1, Q, axis, vm, color=(0, 1, 0)):
         Pcurrent[Y] += xtest * sy
 
         # We check for collisions.
-        if Pcurrent not in vm:
-            Q += [Voxel(*Pcurrent, color)]
+        #if Pcurrent not in vm:
+        Q += [Voxel(*Pcurrent, color)]
         vm.hit(*Pcurrent)
 
     if Q:  # We remove the last one as it should be P1 which we already have.
@@ -115,8 +115,8 @@ def mark_line_ILV(P0, P1, Q, vm, color=(0, 1, 0)):
         Pcurrent[Lindex] += dP[Lindex]
         L = [L[i] - Lmin for i in range(3)]
         L[Lindex] = 2 * M[Lindex]
-        if Pcurrent not in vm:
-            Q += [Voxel(*Pcurrent, color)]
+        #if Pcurrent not in vm:
+        Q += [Voxel(*Pcurrent, color)]
         vm.hit(*Pcurrent)
 
     return Q
@@ -153,12 +153,10 @@ def get_next_in_slice(P0, Q, endP, axis):
     C1 = C0 - abs(dXAB) - abs(dYAB)
     C2 = C0 + abs(dXAB) + abs(dYAB)
     C0 += dXAB * sign(Q[0][X] - P0[X]) + dYAB * sign(Q[0][Y] - P0[Y])
+    stock = Q.popleft()
 
-    if len(Q) > 1 and C1 <= C0 <= C2:
-        while len(Q) > 1 and C1 <= C0 <= C2:
-            C0 += dYAB * sign(Q[1][X] - Q[0][X]) + dXAB * sign(Q[1][Y] - Q[0][Y])
-            stock = Q.popleft()
-    else:
+    while len(Q) >= 1 and C1 <= C0 <= C2:
+        C0 += dYAB * sign(Q[0][X] - stock[X]) + dXAB * sign(Q[0][Y] - stock[Y])
         stock = Q.popleft()
 
     return stock.get_coords()
