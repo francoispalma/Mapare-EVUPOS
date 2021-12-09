@@ -76,7 +76,7 @@ def bresenham(P0, P1, Q, axis, vm, color=(0, 1, 0)):
         err += xtest * dx
         Pcurrent[Y] += xtest * sy
 
-        # We check for collisions
+        # We check for collisions.
         if Pcurrent not in vm:
             Q += [Voxel(*Pcurrent, color)]
         vm.hit(*Pcurrent)
@@ -135,7 +135,7 @@ def get_sub_sequence(Q, slice_, axis):
 def get_next_in_slice(P0, Q, endP, axis):
     """Function that determines the next voxel for the subsequence Q.
     """
-    # If Q is empty we just return P0
+    # If Q is empty we just return P0.
     if not Q:
         return P0
 
@@ -167,15 +167,17 @@ def get_next_in_slice(P0, Q, endP, axis):
 def fill_interior(Q1, Q2, P0, P1, P2, axis, vm):
     """Function that voxelizes the interior of the triangle P0P1P2.
     """
+    # We're giving a colour gradient to each scanline to better visualize it.
     maxi = max(len(Q1), len(Q2))
     compteur = maxi / 20
+
     Q1c = Q1.copy()
     Q2c = Q2.copy()
     Qout = deque()
     Pstart = Q1c.popleft()
     Pstop = Q2c.popleft()
     for i in range (P2[axis] - P0[axis]):
-        slice_ = P0[axis] + i + 0.5
+        slice_ = P0[axis] + i + 1
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
         while Q1sub and Q2sub:
@@ -202,6 +204,8 @@ class Triangle3D(object):
         return f'Triangle3D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3}, color:{self.color}, voxlist:{self.voxlist})'
 
     def draw(self):
+        """Function that draws the triangle in openGL.
+        """
         glBegin(GL_TRIANGLES)
 
         glColor3f(*self.color)
@@ -211,6 +215,8 @@ class Triangle3D(object):
         glEnd()
 
     def normalize(self, maqs=None):
+        """Function to normalize from integer coordinates to -1.0 to 1.0 floats.
+        """
         if maqs is None or maqs == 0:
             maqs = 0
             for coord in self.s1 + self.s2 + self.s3:
@@ -223,18 +229,26 @@ class Triangle3D(object):
         self.s1 = (np.array(self.s1) / maqs).tolist()
         self.s2 = (np.array(self.s2) / maqs).tolist()
         self.s3 = (np.array(self.s3) / maqs).tolist()
+        
+        # We also normalize of the voxels in the triangle's voxelization.
         Voxel.width = 1 / maqs
         for voxel in self.voxlist:
             voxel.normalize(maqs)
 
     def find_dominant_axis(self):
+        """Function to determine the dominant axis of the triangle.
+        """
         if self._dominant_axis is not None:
             return self._dominant_axis
+
+        # First we get a normal vector through a cross product.
         a = (np.array(self.s2) - np.array(self.s1)).tolist()
         b = (np.array(self.s3) - np.array(self.s1)).tolist()
         normal_vector = [a[1] * b[2] - a[2] * b[1],
                          a[2] * b[0] - a[0] * b[2],
                          a[0] * b[1] - a[1] * b[0]]
+
+        # Then we determine the maximum value of that vector and its axis.
         i = 0
         val = normal_vector[0]
         for j in range(1, 3):
@@ -247,29 +261,62 @@ class Triangle3D(object):
         return i
 
     def add_voxel(self, voxel):
+        """Function to add a voxel to the voxelization of the triangle.
+        """
         self.voxlist += [voxel]
 
     def draw_voxels(self):
+        """Function to draw the triangle's voxelization.
+        """
         for voxel in self.voxlist:
             voxel.draw()
 
     def voxelize_triangle(self):
+        """Voxelization of the triangle through a method by Zhang et al.
+        We stick to their notations as much as possible.
+
+        Note that calling this method multiple times will not clear the previous
+        values.
+        """
         P0, P1, P2 = self.s1, self.s2, self.s3
-        i = self.find_dominant_axis()
-        P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
-        Q0, Q1, Q2 = deque([Voxel(*P0)]), deque([Voxel(*P1)]), deque([Voxel(*P0)])
+
+        # The voxels on all 3 vertices will be in the voxelization.
         self._voxmatrix.hit(*P0)
         self._voxmatrix.hit(*P1)
         self._voxmatrix.hit(*P2)
+
+        # First we find the dominant axis.
+        i = self.find_dominant_axis()
+
+        # Then we sort the vertices along that axis (smallest to highest value).
+        P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
+
+        # We declare 3 queues with the beginning vertices as a starting point.
+        Q0, Q1, Q2 = deque([Voxel(*P0)]), deque([Voxel(*P1)]), deque([Voxel(*P0)])
+
+        # Then we voxelize each edge.
         mark_line_ILV(P0, P1, Q0, self._voxmatrix, (0, 0, 1))
         mark_line_ILV(P1, P2, Q1, self._voxmatrix, (0, 1, 1))
         mark_line_ILV(P0, P2, Q2, self._voxmatrix, (1, 1, 0))
+
+        # We add the vertex to terminate the edge for calculation purposes.
         Q2 += [Voxel(*P2)]
+
+        # Q1 becomes the union of Q1 and Q0.
         Q1 = Q0 + Q1 + deque([Voxel(*P2)])
+
+        # Then we apply the scanline algorithm to fill the interior.
         interior = fill_interior(Q1, Q2, P0, P1, P2, i, self._voxmatrix)
+
+        # We'll have P0 and P2 twice unless we do this.
         Q1.popleft()
         Q2.pop()
+
+        # Finally we add everything to the voxelization.
         self.voxlist += Q1 + Q2 + interior
 
     def trim(self):
+        """Function to remove any voxel overlapping with another.
+        Mostly for rendering purposes.
+        """
         self.voxlist = list(set(self.voxlist))

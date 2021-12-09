@@ -11,8 +11,6 @@ from triangle import *
 from voxel import *
 import time
 
-ESCAPE = b'\x1b'
-window = 0
 
 # rotation
 X_AXIS = 0.0
@@ -34,9 +32,10 @@ ZCOORD = -6.0
 def get_coord():
     return randrange(201) - 100
 
+
+# Benchmark time
 if len(sys.argv) > 1 and sys.argv[1] == "demo":
     c1 = time.process_time()
-    # Trim demo
     presum = 0
     aftsum = 0
     for i in range(1000):
@@ -163,7 +162,6 @@ def draw_gl_scene():
 def main():
     """Main function called in the demo.
     """
-    global window
 
     width = 640
     height = 480
