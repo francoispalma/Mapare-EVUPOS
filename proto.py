@@ -2,14 +2,13 @@
 
 from random import randrange
 import sys
+import time
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from triangle import *
-from voxel import *
-import time
+from triangle import Triangle3D
 
 
 # rotation
@@ -68,9 +67,10 @@ exa.normalize()
 
 
 def init_gl(width, height):
-    global WINRATIO
     """Function to initialise some variables at the beginning.
     """
+
+    global WINRATIO
     glClearColor(0.9, 0.9, 0.9, 1.0)
     glClearDepth(1.0)
     glDepthFunc(GL_LESS)

@@ -1,10 +1,11 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 4 -*-
 
+from collections import deque
+
+import numpy as np
+
 from OpenGL.GL import *
 from voxel import Voxel, Voxelmatrix
-import numpy as np
-from collections import deque
-from itertools import islice
 
 
 def sort_on_axis(P0, P1, P2, i):
@@ -14,18 +15,13 @@ def sort_on_axis(P0, P1, P2, i):
         if P0[i] <= P2[i]:
             if P1[i] <= P2[i]:
                 return P0, P1, P2
-            else:
-                return P0, P2, P1
-        else:
-            return P2, P0, P1
-    else:
-        if P1[i] <= P2[i]:
-            if P0[i] <= P2[i]:
-                return P1, P0, P2
-            else:
-                return P1, P2, P0
-        else:
-            return P2, P1, P0
+            return P0, P2, P1
+        return P2, P0, P1
+    if P1[i] <= P2[i]:
+        if P0[i] <= P2[i]:
+            return P1, P0, P2
+        return P1, P2, P0
+    return P2, P1, P0
 
 
 def sign(expr):
@@ -174,7 +170,7 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis, vm):
     Qout = deque()
     Pstart = Q1c.popleft()
     Pstop = Q2c.popleft()
-    for i in range (P2[axis] - P0[axis]):
+    for i in range(P2[axis] - P0[axis]):
         slice_ = P0[axis] + i + 1
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
@@ -187,8 +183,14 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis, vm):
     return Qout
 
 
-class Triangle3D(object):
+class Triangle3D():
+    """Triangle class to represent a triangle in 3D for voxelization purposes.
+    """
+
     def __init__(self, s1, s2, s3, color=(1, 0, 0)):
+        """s1, s2, s3: the three vertices in [x, y, z] format.
+        color: for rendering purposes, gives a colour the triangle's interior.
+        """
         self.s1 = s1
         self.s2 = s2
         self.s3 = s3
@@ -227,7 +229,7 @@ class Triangle3D(object):
         self.s1 = (np.array(self.s1) / maqs).tolist()
         self.s2 = (np.array(self.s2) / maqs).tolist()
         self.s3 = (np.array(self.s3) / maqs).tolist()
-        
+
         # We also normalize of the voxels in the triangle's voxelization.
         Voxel.width = 1 / maqs
         for voxel in self.voxlist:
@@ -312,6 +314,10 @@ class Triangle3D(object):
 
         # Finally we add everything to the voxelization.
         self.voxlist += Q1 + Q2 + interior
+
+    def naive_voxelize(self):
+        # TODO
+        pass
 
     def trim(self):
         """Function to remove any voxel overlapping with another.
