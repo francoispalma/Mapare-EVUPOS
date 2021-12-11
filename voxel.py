@@ -47,6 +47,9 @@ class Voxel:
         return self.coord_x == other.coord_x and self.coord_y == other.coord_y\
                and self.coord_z == other.coord_z
 
+    def copy(self):
+        return self.get_coords().copy()
+
     def get_faces(self):
         """Function to get the faces of the cube for the voxel render.
         We calculate the faces again each frame to not have to keep everything

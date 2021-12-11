@@ -42,7 +42,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "demo":
                   [get_coord(), get_coord(), get_coord()], \
                   [get_coord(), get_coord(), get_coord()]
         tmp = Triangle3D(A, B, C)
-        tmp.voxelize_triangle()
+        #tmp.voxelize_triangle()
+        tmp.naive_voxelize()
         presum += len(tmp.voxlist)
         tmp.trim()
         aftsum += len(tmp.voxlist)
@@ -61,7 +62,9 @@ print(A, B, C)
 
 # We construct a triangle from them
 exa = Triangle3D(A, B, C)
-exa.voxelize_triangle()
+#exa.voxelize_triangle()
+exa.naive_voxelize()
+exa.trim()
 
 exa.normalize()
 

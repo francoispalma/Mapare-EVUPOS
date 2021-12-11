@@ -1,7 +1,5 @@
 # -*- mode: python; indent-tabs-mode: nil; tab-width: 4 -*-
 
-from collections import deque
-
 import numpy as np
 
 from OpenGL.GL import *
@@ -121,9 +119,9 @@ def mark_line_ILV(P0, P1, Q, vm, color=(0, 1, 0)):
 def get_sub_sequence(Q, slice_, axis):
     """Function that returns a slice of Q with a specific coordinate on axis.
     """
-    VLC = deque()
+    VLC = []
     while Q and Q[0][axis] < slice_:
-        VLC += [Q.popleft()]
+        VLC += [Q.pop(0)]
 
     return VLC
 
@@ -149,11 +147,11 @@ def get_next_in_slice(P0, Q, endP, axis):
     C1 = C0 - abs(dXAB) - abs(dYAB)
     C2 = C0 + abs(dXAB) + abs(dYAB)
     C0 += dXAB * sign(Q[0][X] - P0[X]) + dYAB * sign(Q[0][Y] - P0[Y])
-    stock = Q.popleft()
+    stock = Q.pop(0)
 
     while len(Q) >= 1 and C1 <= C0 <= C2:
         C0 += dYAB * sign(Q[0][X] - stock[X]) + dXAB * sign(Q[0][Y] - stock[Y])
-        stock = Q.popleft()
+        stock = Q.pop(0)
 
     return stock.get_coords()
 
@@ -167,9 +165,9 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis, vm):
 
     Q1c = Q1.copy()
     Q2c = Q2.copy()
-    Qout = deque()
-    Pstart = Q1c.popleft()
-    Pstop = Q2c.popleft()
+    Qout = []
+    Pstart = Q1c.pop(0)
+    Pstop = Q2c.pop(0)
     for i in range(P2[axis] - P0[axis]):
         slice_ = P0[axis] + i + 1
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
@@ -292,7 +290,7 @@ class Triangle3D():
         P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
 
         # We declare 3 queues with the beginning vertices as a starting point.
-        Q0, Q1, Q2 = deque([Voxel(*P0)]), deque([Voxel(*P1)]), deque([Voxel(*P0)])
+        Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
 
         # Then we voxelize each edge.
         mark_line_ILV(P0, P1, Q0, self._voxmatrix, (0, 0, 1))
@@ -303,21 +301,36 @@ class Triangle3D():
         Q2 += [Voxel(*P2)]
 
         # Q1 becomes the union of Q1 and Q0.
-        Q1 = Q0 + Q1 + deque([Voxel(*P2)])
+        Q1 = Q0 + Q1 + [Voxel(*P2)]
 
         # Then we apply the scanline algorithm to fill the interior.
         interior = fill_interior(Q1, Q2, P0, P1, P2, i, self._voxmatrix)
 
         # We'll have P0 and P2 twice unless we do this.
-        Q1.popleft()
+        Q1.pop(0)
         Q2.pop()
 
         # Finally we add everything to the voxelization.
         self.voxlist += Q1 + Q2 + interior
 
     def naive_voxelize(self):
-        # TODO
-        pass
+        """Voxelization of the triangle using a naive scanline method.
+        Same general principles as the normal voxelize.
+        """
+        P0, P1, P2 = self.s1, self.s2, self.s3
+        i = self.find_dominant_axis()
+        P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
+        Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
+        mark_line_ILV(P0, P1, Q0, self._voxmatrix, (0, 0, 1))
+        mark_line_ILV(P1, P2, Q1, self._voxmatrix, (0, 1, 1))
+        mark_line_ILV(P0, P2, Q2, self._voxmatrix, (1, 1, 0))
+        Q1 += [Voxel(*P2)]
+        Q2 += [Voxel(*P2)]
+        Q1c = Q1.copy()
+        Q2c = Q2.copy()
+        while Q1c and Q2c:
+            mark_line_ILV(Q1c.pop(0), Q2c.pop(0), Q0, self._voxmatrix)
+        self.voxlist += Q2 + Q1 + Q0
 
     def trim(self):
         """Function to remove any voxel overlapping with another.
