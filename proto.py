@@ -31,26 +31,47 @@ ZCOORD = -6.0
 def get_coord():
     return randrange(201) - 100
 
+method = Triangle3D.voxelize_triangle
+nbtriangles = 1000
 
-# Benchmark time
-if len(sys.argv) > 1 and sys.argv[1] == "demo":
-    c1 = time.process_time()
-    presum = 0
-    aftsum = 0
-    for i in range(1000):
-        A, B, C = [get_coord(), get_coord(), get_coord()], \
-                  [get_coord(), get_coord(), get_coord()], \
-                  [get_coord(), get_coord(), get_coord()]
-        tmp = Triangle3D(A, B, C)
-        #tmp.voxelize_triangle()
-        tmp.naive_voxelize()
-        presum += len(tmp.voxlist)
-        tmp.trim()
-        aftsum += len(tmp.voxlist)
-    c2 = time.process_time()
+# Command line arguments
+if len(sys.argv) > 1:
+    if "covertest" in sys.argv:
+        presum = 0
+        aftsum = 0
+        for i in range(nbtriangles):
+            A, B, C = [get_coord(), get_coord(), get_coord()], \
+                      [get_coord(), get_coord(), get_coord()], \
+                      [get_coord(), get_coord(), get_coord()]
+            tmp = Triangle3D(A, B, C)
+            tmp.voxelize_triangle()
+            tmp.trim()
+            presum += len(tmp.voxlist)
+            tmp.naive_voxelize()
+            tmp.trim()
+            aftsum += len(tmp.voxlist)
 
-    print(aftsum/presum, aftsum, presum)
-    print(c2 - c1)
+        print(presum/aftsum, presum, aftsum)
+    if "naive" in sys.argv:
+        method = Triangle3D.naive_voxelize
+    if "benchmark" in sys.argv:
+        c1 = time.process_time()
+        presum = 0
+        aftsum = 0
+        for i in range(nbtriangles):
+            A, B, C = [get_coord(), get_coord(), get_coord()], \
+                      [get_coord(), get_coord(), get_coord()], \
+                      [get_coord(), get_coord(), get_coord()]
+            tmp = Triangle3D(A, B, C)
+            method(tmp)
+            presum += len(tmp.voxlist)
+            tmp.trim()
+            aftsum += len(tmp.voxlist)
+        c2 = time.process_time()
+
+        print(aftsum/presum, aftsum, presum)
+        print(c2 - c1)
+        
 
 
 # Get three random vertices for the demo
@@ -62,8 +83,7 @@ print(A, B, C)
 
 # We construct a triangle from them
 exa = Triangle3D(A, B, C)
-#exa.voxelize_triangle()
-exa.naive_voxelize()
+method(exa)
 exa.trim()
 
 exa.normalize()
