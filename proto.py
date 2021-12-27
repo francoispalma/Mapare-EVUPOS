@@ -71,7 +71,7 @@ if len(sys.argv) > 1:
 
         print(aftsum/presum, aftsum, presum)
         print(c2 - c1)
-        
+
 
 
 # Get three random vertices for the demo
@@ -159,7 +159,7 @@ def draw_gl_scene():
 
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    
+
     # Translation
     glTranslatef(XCOORD, YCOORD, ZCOORD)
 
@@ -194,7 +194,7 @@ def main():
     glutInitWindowSize(width, height)
     glutInitWindowPosition(200, 200)
 
-    window = glutCreateWindow('proto')
+    glutCreateWindow('proto')
 
     glutDisplayFunc(draw_gl_scene)
     glutIdleFunc(draw_gl_scene)

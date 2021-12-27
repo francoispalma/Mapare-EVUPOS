@@ -60,12 +60,12 @@ def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
     dy = P1[Y] - P0[Y]
     sy = sign(dy)
     dy = -abs(dy)
-    err = dx + dy
+    errsum = dx + dy
 
     Pcurrent = P0.copy()
     while Pcurrent[X] != P1[X] or Pcurrent[Y] != P1[Y]:
         # We get the current error and double it.
-        e2 = 2 * err
+        e2 = 2 * errsum
 
         # We determine if y or x is the one that needs to change.
         # In case of a tie we choose the one with the biggest deviation.
@@ -81,7 +81,7 @@ def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
         Q += [Voxel(*Pcurrent, color)]
 
         # We update the error.
-        err += ytest * dy + xtest * dx
+        errsum += ytest * dy + xtest * dx
 
     if Q:  # We remove the last one as it should be P1 which we already have.
         Q.pop()
@@ -161,7 +161,7 @@ def get_next_in_slice(P0, Q, endP, axis):
     return stock.get_coords()
 
 
-def fill_interior(Q1, Q2, P0, P1, P2, axis):
+def fill_interior(Q1, Q2, P0, P2, axis):
     """Function that voxelizes the interior of the triangle P0P1P2.
     """
     # We're giving a colour gradient to each scanline to better visualize it.
@@ -320,7 +320,7 @@ class Triangle3D():
         Q1 = Q0 + Q1 + [Voxel(*P2)]
 
         # Then we apply the scanline algorithm to fill the interior.
-        interior = fill_interior(Q1, Q2, P0, P1, P2, i)
+        interior = fill_interior(Q1, Q2, P0, P2, i)
 
         # We'll have P0 and P2 twice unless we do this.
         Q1.pop(0)
@@ -347,7 +347,7 @@ class Triangle3D():
         Pstart = P0.copy()
         Pstop = P1.copy()
         i = 0
-        
+
         while Q1c and Q2c and i < P2[axis] - P0[axis]:
             slice_ = P0[axis] + i + 1
             Q1sub = get_sub_sequence(Q1c, slice_, axis)
