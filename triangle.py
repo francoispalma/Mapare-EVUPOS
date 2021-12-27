@@ -3,7 +3,7 @@
 import numpy as np
 
 from OpenGL.GL import *
-from voxel import Voxel, Voxelmatrix
+from voxel import Voxel
 
 
 def sort_on_axis(P0, P1, P2, i):
@@ -40,16 +40,20 @@ def get_min(L):
     return mini, index
 
 
-def bresenham(P0, P1, Q, axis, vm, color=(0, 1, 0)):
+def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
     """Bresenham's algorithm for the 2D case to mark the P0 to P1 line, putting
-    it in Q.
-    vm is used for collision checking (Voxelmatrix).
+    it in Q. We use branchless programming as much as possible.
     color is to specify a color for the voxel line.
     """
+
+    # Initialization.
+    # We get X and Y.
     axes = [0, 1, 2]
     axes.remove(axis)
     X = axes[0]
     Y = axes[1]
+
+    # We get dx and its sign, dy and its sign then the error.
     dx = P1[X] - P0[X]
     sx = sign(dx)
     dx = abs(dx)
@@ -60,20 +64,24 @@ def bresenham(P0, P1, Q, axis, vm, color=(0, 1, 0)):
 
     Pcurrent = P0.copy()
     while Pcurrent[X] != P1[X] or Pcurrent[Y] != P1[Y]:
+        # We get the current error and double it.
         e2 = 2 * err
 
+        # We determine if y or x is the one that needs to change.
+        # In case of a tie we choose the one with the biggest deviation.
         ytest = e2 >= dy
-        err += ytest * dy
-        Pcurrent[X] += ytest * sx
+        xtest = e2 <= dx - (ytest == 1 and e2 - dy <= dx - e2)
+        ytest = (ytest == 1) - (xtest == 1)
 
-        xtest = e2 <= dx
-        err += xtest * dx
+        # We update the current point's coordinates.
+        Pcurrent[X] += ytest * sx
         Pcurrent[Y] += xtest * sy
 
-        # We check for collisions.
-        #if Pcurrent not in vm:
+        # We add it to the Queue.
         Q += [Voxel(*Pcurrent, color)]
-        vm.hit(*Pcurrent)
+
+        # We update the error.
+        err += ytest * dy + xtest * dx
 
     if Q:  # We remove the last one as it should be P1 which we already have.
         Q.pop()
@@ -81,9 +89,8 @@ def bresenham(P0, P1, Q, axis, vm, color=(0, 1, 0)):
     return Q
 
 
-def mark_line_ILV(P0, P1, Q, vm, color=(0, 1, 0)):
+def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
     """Function that marks a line of voxels between P0 and P1, putting it in Q.
-    vm is used for collision checking (Voxelmatrix).
     color is to specify a color for the voxel line.
     """
     dP = []
@@ -94,8 +101,7 @@ def mark_line_ILV(P0, P1, Q, vm, color=(0, 1, 0)):
     # We test the 2D case.
     for i in range(3):
         if dP[i] == 0:  # If one of the axes is flat we use bresenham.
-            return bresenham(P0, P1, Q, i, vm, color)
-
+            return bresenham(P0, P1, Q, i, color)
 
     L = []
     L += [abs(P1[1] - P0[1]) * abs(P1[2] - P0[2])]
@@ -109,9 +115,8 @@ def mark_line_ILV(P0, P1, Q, vm, color=(0, 1, 0)):
         Pcurrent[Lindex] += dP[Lindex]
         L = [L[i] - Lmin for i in range(3)]
         L[Lindex] = 2 * M[Lindex]
-        #if Pcurrent not in vm:
+
         Q += [Voxel(*Pcurrent, color)]
-        vm.hit(*Pcurrent)
 
     return Q
 
@@ -140,23 +145,23 @@ def get_next_in_slice(P0, Q, endP, axis):
     Y = axes[1]
 
     # We get the sides of the triangle.
-    dXAB = endP[X] - P0[X]
-    dYAB = endP[Y] - P0[Y]
+    dXAB = P0[X] - endP[X]
+    dYAB = P0[Y] - endP[Y]
 
     C0 = dYAB * P0[X] - dXAB * P0[Y]
     C1 = C0 - abs(dXAB) - abs(dYAB)
     C2 = C0 + abs(dXAB) + abs(dYAB)
-    C0 += dXAB * sign(Q[0][X] - P0[X]) + dYAB * sign(Q[0][Y] - P0[Y])
+    C0 += dXAB * (Q[0][X] - P0[X]) + dYAB * (Q[0][Y] - P0[Y])
     stock = Q.pop(0)
 
-    while len(Q) >= 1 and C1 <= C0 <= C2:
-        C0 += dYAB * sign(Q[0][X] - stock[X]) + dXAB * sign(Q[0][Y] - stock[Y])
+    while Q and C1 <= C0 <= C2:
+        C0 += dYAB * (Q[0][X] - stock[X]) + dXAB * (Q[0][Y] - stock[Y])
         stock = Q.pop(0)
 
     return stock.get_coords()
 
 
-def fill_interior(Q1, Q2, P0, P1, P2, axis, vm):
+def fill_interior(Q1, Q2, P0, P1, P2, axis):
     """Function that voxelizes the interior of the triangle P0P1P2.
     """
     # We're giving a colour gradient to each scanline to better visualize it.
@@ -168,16 +173,34 @@ def fill_interior(Q1, Q2, P0, P1, P2, axis, vm):
     Qout = []
     Pstart = Q1c.pop(0)
     Pstop = Q2c.pop(0)
+
+    def do_scanlines(edge1, edge2):
+        nonlocal Pstop, Pstart, compteur
+        while edge1 and edge2:
+            tmp = get_next_in_slice(Pstart, edge1, Pstop, axis)
+            Pstop = get_next_in_slice(Pstop, edge2, Pstart, axis)
+            Pstart = tmp
+            mark_line_ILV(Pstart, Pstop, Qout, (0, compteur / maxi, 0))
+            compteur += 1
+
     for i in range(P2[axis] - P0[axis]):
         slice_ = P0[axis] + i + 1
+
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
-        while Q1sub and Q2sub:
-            tmp = get_next_in_slice(Pstart, Q1sub, Pstop, axis)
-            Pstop = get_next_in_slice(Pstop, Q2sub, Pstart, axis)
-            Pstart = tmp
-            mark_line_ILV(Pstart, Pstop, Qout, vm, (0, compteur / maxi, 0))
-            compteur += 1
+
+        do_scanlines(Q1sub, Q2sub)
+
+        # We check to see if there's something left in the edge and react.
+        if len(Q1sub) > 1 and Pstop not in Q1sub:
+            mark_line_ILV(Pstop, Q1sub[-1], Q2sub, (0, compteur / maxi, 0))
+            Qout += Q2sub
+        elif len(Q2sub) > 1 and Pstart not in Q2sub:
+            mark_line_ILV(Pstart, Q2sub[-1], Q1sub, (0, compteur / maxi, 0))
+            Qout += Q1sub
+
+        do_scanlines(Q1sub, Q2sub)
+
     return Qout
 
 
@@ -195,8 +218,6 @@ class Triangle3D():
         self.color = color
         self.voxlist = []
         self._dominant_axis = None
-
-        self._voxmatrix = Voxelmatrix(s1, s2, s3)
 
     def __repr__(self):
         return f'Triangle3D(s1:{self.s1}, s2:{self.s2}, s3:{self.s3}, color:{self.color}, voxlist:{self.voxlist})'
@@ -278,11 +299,6 @@ class Triangle3D():
         """
         P0, P1, P2 = self.s1, self.s2, self.s3
 
-        # The voxels on all 3 vertices will be in the voxelization.
-        self._voxmatrix.hit(*P0)
-        self._voxmatrix.hit(*P1)
-        self._voxmatrix.hit(*P2)
-
         # First we find the dominant axis.
         i = self.find_dominant_axis()
 
@@ -293,9 +309,9 @@ class Triangle3D():
         Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
 
         # Then we voxelize each edge.
-        mark_line_ILV(P0, P1, Q0, self._voxmatrix, (0, 0, 1))
-        mark_line_ILV(P1, P2, Q1, self._voxmatrix, (0, 1, 1))
-        mark_line_ILV(P0, P2, Q2, self._voxmatrix, (1, 1, 0))
+        mark_line_ILV(P0, P1, Q0, (0, 0, 1))
+        mark_line_ILV(P1, P2, Q1, (0, 1, 1))
+        mark_line_ILV(P0, P2, Q2, (1, 1, 0))
 
         # We add the vertex to terminate the edge for calculation purposes.
         Q2 += [Voxel(*P2)]
@@ -304,7 +320,7 @@ class Triangle3D():
         Q1 = Q0 + Q1 + [Voxel(*P2)]
 
         # Then we apply the scanline algorithm to fill the interior.
-        interior = fill_interior(Q1, Q2, P0, P1, P2, i, self._voxmatrix)
+        interior = fill_interior(Q1, Q2, P0, P1, P2, i)
 
         # We'll have P0 and P2 twice unless we do this.
         Q1.pop(0)
@@ -318,18 +334,31 @@ class Triangle3D():
         Same general principles as the normal voxelize.
         """
         P0, P1, P2 = self.s1, self.s2, self.s3
-        i = self.find_dominant_axis()
-        P0, P1, P2 = sort_on_axis(P0, P1, P2, i)
+        axis = self.find_dominant_axis()
+        P0, P1, P2 = sort_on_axis(P0, P1, P2, axis)
         Q0, Q1, Q2 = [Voxel(*P0)], [Voxel(*P1)], [Voxel(*P0)]
-        mark_line_ILV(P0, P1, Q0, self._voxmatrix, (0, 0, 1))
-        mark_line_ILV(P1, P2, Q1, self._voxmatrix, (0, 1, 1))
-        mark_line_ILV(P0, P2, Q2, self._voxmatrix, (1, 1, 0))
+        mark_line_ILV(P0, P1, Q0, (0, 0, 1))
+        mark_line_ILV(P1, P2, Q1, (0, 1, 1))
+        mark_line_ILV(P0, P2, Q2, (1, 1, 0))
         Q1 += [Voxel(*P2)]
         Q2 += [Voxel(*P2)]
         Q1c = Q1.copy()
         Q2c = Q2.copy()
-        while Q1c and Q2c:
-            mark_line_ILV(Q1c.pop(0), Q2c.pop(0), Q0, self._voxmatrix)
+        Pstart = P0.copy()
+        Pstop = P1.copy()
+        i = 0
+        
+        while Q1c and Q2c and i < P2[axis] - P0[axis]:
+            slice_ = P0[axis] + i + 1
+            Q1sub = get_sub_sequence(Q1c, slice_, axis)
+            Q2sub = get_sub_sequence(Q2c, slice_, axis)
+            while Q1sub or Q2sub:
+                if Q2sub:
+                    Pstart = Q2sub.pop(0)
+                if Q1sub:
+                    Pstop = Q1sub.pop(0)
+                mark_line_ILV(Pstart, Pstop, Q0)
+            i += 1
         self.voxlist += Q2 + Q1 + Q0
 
     def trim(self):

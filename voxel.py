@@ -44,8 +44,8 @@ class Voxel:
         made for speed. We assume the "other" being given is always a voxel and
         we don't check explicitly.
         """
-        return self.coord_x == other.coord_x and self.coord_y == other.coord_y\
-               and self.coord_z == other.coord_z
+        return self[0] == other[0] and self[1] == other[1]\
+               and self[2] == other[2]
 
     def copy(self):
         return self.get_coords().copy()
