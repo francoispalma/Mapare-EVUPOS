@@ -49,8 +49,8 @@
       \frame{\includegraphics[width=\textwidth]{resources/voxelization_steps.png}}
       \caption*{Etapes de la voxelization}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.2\textwidth}
+    \hspace{1.2cm}
+    \begin{subfigure}{0.225\textwidth}
       \frame{\includegraphics[width=\textwidth]{resources/algo_paper.png}}
     \end{subfigure}
   \end{figure}
@@ -62,7 +62,7 @@
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
   \begin{itemize}
-      \item Très rapide
+      \item Plus c'est rapide mieux c'est
       \item Parfaitement compatible avec le multithreading
       \item Plus on a de triangles plus c'est rapide
       \item L'approximation des entiers réduit les trous dans la couverture
@@ -85,6 +85,23 @@
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.4\textwidth}
+      \begin{itemize}
+        \item Voxelization d'un triangle
+        \item Utiliser openGL
+      \end{itemize}
+    \column{0.5\textwidth}
+      \begin{figure}
+        \begin{subfigure}{0.4\textwidth}
+          \frame{\includegraphics[width=\textwidth]{resources/opengl_logo.png}}
+        \end{subfigure}
+      \end{figure}
+  \end{columns}
+  \vfill
+  \begin{itemize}
+    \item Nous pensions que tout était simple et clair
+  \end{itemize}
 \end{frame}
 
 %--------------------------------------
@@ -92,6 +109,27 @@
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
+  \begin{itemize}
+    \item Reprise en main d'openGL
+  \end{itemize}
+  \hfill
+  \begin{itemize}
+    \item Très satisfait du rendu du triangle à l'écran
+  \end{itemize}
+  \hfill
+  \begin{itemize}
+    \item Voxelization des côtés se fait rapidement
+  \end{itemize}
+  \hfill
+  \begin{itemize}
+    \item Parties qui ne sont pas claires dans l'algo
+  \end{itemize}
+  \hfill
+  \begin{figure}
+        \begin{subfigure}{0.6\textwidth}
+          \frame{\includegraphics[width=\textwidth]{resources/voxelization_edge.png}}
+        \end{subfigure}
+      \end{figure}
 \end{frame}
 
 %--------------------------------------
@@ -99,6 +137,26 @@
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.5\textwidth}
+      \begin{itemize}
+        \item Essais et erreurs pour trouver ce qui ne fonctionne pas bien
+      \end{itemize}
+      \hfill
+      \begin{itemize}
+        \item Essayer la méthode naïve et se rendre compte qu'elle marche mieux
+      \end{itemize}
+      \hfill
+      \begin{itemize}
+        \item Réaliser que l'algo est incomplet
+      \end{itemize}
+    \column{0.6\textwidth}
+    \begin{figure}
+        \begin{subfigure}{0.6\textwidth}
+          \frame{\includegraphics[width=\textwidth]{resources/pyramide_curse.png}}
+        \end{subfigure}
+      \end{figure}
+  \end{columns}
 \end{frame}
 
 %--------------------------------------
@@ -106,6 +164,13 @@
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
+  \begin{itemize}
+    \item Relecture minutieuse de l'article pour trouver où se trouve le problème
+  \end{itemize}
+  \hfill
+  \begin{itemize}
+    \item Manque de détail dans les cas 2D
+  \end{itemize}
 \end{frame}
 
 %==============================================
@@ -130,6 +195,17 @@
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
+  \begin{itemize}
+    \item Utiliser CUDA
+  \end{itemize}
+  \hfill
+  \begin{itemize}
+    \item Changer de langage
+  \end{itemize}
+  \hfill
+  \begin{itemize}
+    \item Passer sur du multithread
+  \end{itemize}
 \end{frame}
 
 %--------------------------------------
