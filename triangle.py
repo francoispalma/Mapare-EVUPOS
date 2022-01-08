@@ -70,7 +70,7 @@ def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
         # We determine if y or x is the one that needs to change.
         # In case of a tie we choose the one with the biggest deviation.
         ytest = e2 >= dy
-        xtest = e2 <= dx - (ytest == 1 and e2 - dy <= dx - e2)
+        xtest = (e2 <= dx) - (ytest == 1 and e2 - dy <= dx - e2)
         ytest = (ytest == 1) - (xtest == 1)
 
         # We update the current point's coordinates.
@@ -192,9 +192,9 @@ def fill_interior(Q1, Q2, P0, P2, axis):
         do_scanlines(Q1sub, Q2sub)
 
         # We check to see if there's something left in the edge and react.
-        if len(Q1sub) > 1 and Pstop not in Q1sub:
+        if len(Q1sub) > 1:
             mark_line_ILV(Pstop, Q1sub[-1], Q2sub, (0, compteur / maxi, 0))
-        elif len(Q2sub) > 1 and Pstart not in Q2sub:
+        elif len(Q2sub) > 1:
             mark_line_ILV(Pstart, Q2sub[-1], Q1sub, (0, compteur / maxi, 0))
 
         do_scanlines(Q1sub, Q2sub)

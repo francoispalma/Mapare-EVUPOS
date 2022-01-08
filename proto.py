@@ -44,18 +44,19 @@ if len(sys.argv) > 1:
                       [get_coord(), get_coord(), get_coord()], \
                       [get_coord(), get_coord(), get_coord()]
             tmp = Triangle3D(A, B, C)
+            tmp2 = Triangle3D(A, B, C)
             tmp.voxelize_triangle()
             tmp.trim()
             presum += len(tmp.voxlist)
-            tmp.naive_voxelize()
-            tmp.trim()
-            aftsum += len(tmp.voxlist)
+            tmp2.naive_voxelize()
+            tmp2.trim()
+            aftsum += len(tmp2.voxlist)
 
         print(presum/aftsum, presum, aftsum)
     if "naive" in sys.argv:
         method = Triangle3D.naive_voxelize
     if "benchmark" in sys.argv:
-        c1 = time.process_time()
+        totaltime = 0
         presum = 0
         aftsum = 0
         for i in range(nbtriangles):
@@ -63,14 +64,15 @@ if len(sys.argv) > 1:
                       [get_coord(), get_coord(), get_coord()], \
                       [get_coord(), get_coord(), get_coord()]
             tmp = Triangle3D(A, B, C)
+            c1 = time.process_time()
             method(tmp)
+            totaltime += time.process_time() - c1
             presum += len(tmp.voxlist)
             tmp.trim()
             aftsum += len(tmp.voxlist)
-        c2 = time.process_time()
 
         print(aftsum/presum, aftsum, presum)
-        print(c2 - c1)
+        print(totaltime)
 
 
 
