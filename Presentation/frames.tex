@@ -33,13 +33,6 @@
 \section{Etude de l'article}
 %==============================================
 
-\subsection{3D voxelization ? scanlines ?}
-
-\begin{frame}[fragile=singleslide]{\insertsectionhead}
-  \framesubtitle{\insertsubsectionhead}
-\end{frame}
-
-%--------------------------------------
 \subsection{Spécificité de l'algorithme}
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
@@ -57,6 +50,18 @@
 \end{frame}
 
 %--------------------------------------
+\subsection{3D voxelization ? scanlines ?}
+
+\begin{frame}[fragile=singleslide]{\insertsectionhead}
+  \framesubtitle{\insertsubsectionhead}
+  \begin{figure}
+      \begin{subfigure}{1\textwidth}
+        \frame{\includegraphics[width=\textwidth]{resources/scanlines.png}}
+      \end{subfigure}
+    \end{figure}
+\end{frame}
+
+%--------------------------------------
 \subsection{Points clés}
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
@@ -67,7 +72,7 @@
       \item Plus on a de triangles plus c'est rapide
       \item L'approximation des entiers réduit les trous dans la couverture
     \end{itemize}
-    \vfill
+    \vspace{0.5cm}
     \begin{figure}
       \begin{subfigure}{1\textwidth}
         \frame{\includegraphics[width=\textwidth]{resources/elephant.png}}
@@ -89,7 +94,8 @@
     \column{0.4\textwidth}
       \begin{itemize}
         \item Voxelization d'un triangle
-        \item Utiliser openGL
+        \item Utiliser OpenGL
+        \item Prototypage 2D
       \end{itemize}
     \column{0.5\textwidth}
       \begin{figure}
@@ -99,9 +105,9 @@
       \end{figure}
   \end{columns}
   \vfill
-  \begin{itemize}
-    \item Nous pensions que tout était simple et clair
-  \end{itemize}
+  \vfill
+  \hspace{0.2cm}
+  {\large Nous pensions que tout était simple et clair}
 \end{frame}
 
 %--------------------------------------
@@ -141,7 +147,7 @@
   \begin{columns}[T,onlytextwidth]
     \column{0.5\textwidth}
       \begin{itemize}
-        \item Essais et erreurs pour trouver ce qui ne fonctionne pas bien
+        \item Déboggage du problème de la pyramide
       \end{itemize}
       \hfill
       \begin{itemize}
@@ -172,6 +178,10 @@
   \begin{itemize}
     \item Manque de détail dans les cas 2D
   \end{itemize}
+  \hfill
+  \begin{itemize}
+    \item Choix d’utilisation de Bresenham dans les cas 2D
+  \end{itemize}
 \end{frame}
 
 %==============================================
@@ -182,6 +192,22 @@
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
+  \begin{table}
+    \centering
+    \begin{tabular}{@{} lccc @{}}
+      \toprule
+      & \textbf{Velocity} & \textbf{Angle}  & \textbf{Vertical force} \\
+      & $U$ & $\alpha$  & $F_z$ \\
+      & [m/s] & [$^\circ$]  & [N] \\
+      \midrule
+      2D simulation  & 9 & 2 & 9.23 \\
+      3D simulation  & 10.0 & 3 & 15.039 \\
+      Experiment A   & 11.31 & 2.5 & 13.2 \\
+      Experiment B   & 11.26 & 2.7 & 12.6 \\
+      Experiment C   & 11.33 & 2.47 & 13.6 \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
 \end{frame}
 
 %--------------------------------------
@@ -189,6 +215,11 @@
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
+  \begin{figure}
+    \begin{subfigure}{0.4\textwidth}
+      \frame{\includegraphics[width=\textwidth]{resources/demo.png}}
+    \end{subfigure}
+  \end{figure}
 \end{frame}
 
 %--------------------------------------
@@ -214,5 +245,6 @@
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
   \framesubtitle{\insertsubsectionhead}
+  {\Large Implémentation de l’algo de voxelization de l’article en OpenGL réussi mais avec notre interprétation pour le problème des cas 2D}
 \end{frame}
 
