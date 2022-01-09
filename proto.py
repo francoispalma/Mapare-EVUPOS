@@ -81,6 +81,8 @@ A, B, C = [get_coord(), get_coord(), get_coord()], \
           [get_coord(), get_coord(), get_coord()], \
           [get_coord(), get_coord(), get_coord()]
 
+#A, B, C = [-46, -25, -15],[98, -1, -19],[0, 88, -13]
+
 print(A, B, C)
 
 # We construct a triangle from them
