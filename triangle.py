@@ -185,7 +185,7 @@ def fill_interior(Q1, Q2, P0, P2, axis):
             mark_line_ILV(Pstart, Pstop, Qout, (0, compteur / maxi, 0))
             compteur += 3
 
-    for i in range(P2[axis] - P0[axis]):
+    for i in range(P2[axis] - P0[axis] + 1):
         slice_ = P0[axis] + i + 1
 
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
@@ -352,7 +352,7 @@ class Triangle3D():
         Pstop = P1.copy()
         i = 0
 
-        while Q1c and Q2c and i < P2[axis] - P0[axis]:
+        while Q1c and Q2c and i <= P2[axis] - P0[axis]:
             slice_ = P0[axis] + i + 1
             Q1sub = get_sub_sequence(Q1c, slice_, axis)
             Q2sub = get_sub_sequence(Q2c, slice_, axis)
