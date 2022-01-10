@@ -131,7 +131,7 @@ def get_sub_sequence(Q, slice_, axis):
     return VLC
 
 
-def get_next_in_slice(P0, Q, endP, axis):
+def get_next_in_slice(P0, Q, endP, axis, threshold=1):
     """Function that determines the next voxel for the subsequence Q.
     """
     # If Q is empty we just return P0.
@@ -152,6 +152,7 @@ def get_next_in_slice(P0, Q, endP, axis):
         return Q.pop(0).get_coords()
 
     C2 = abs(dXAB) + abs(dYAB)
+    C2 = int(C2 * threshold)
     C1 = -C2
     C0 = dXAB * (Q[0][X] - P0[X]) + dYAB * (Q[0][Y] - P0[Y])
     stock = Q.pop(0)
@@ -180,7 +181,8 @@ def fill_interior(Q1, Q2, P0, P2, axis):
         nonlocal Pstop, Pstart, compteur
         while edge1 and edge2:
             tmp = get_next_in_slice(Pstart, edge1, Pstop, axis)
-            Pstop = get_next_in_slice(Pstop, edge2, Pstart, axis)
+            Pstop = get_next_in_slice(Pstop, edge2, Pstart, axis, 0.4)
+            #Pstop = edge2.pop(0)
             Pstart = tmp
             mark_line_ILV(Pstart, Pstop, Qout, (0, compteur / maxi, 0))
             compteur += 3
