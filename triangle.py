@@ -154,14 +154,16 @@ def get_next_in_slice(P0, Q, endP, axis):
     if dXAB == dYAB == 0:
         return Q.pop(0).get_coords()
 
-    C2 = abs(dXAB) + abs(dYAB)
-    C1 = -C2
-    C0 = dXAB * (Q[0][X] - P0[X]) + dYAB * (Q[0][Y] - P0[Y])
+#    C2 = abs(dXAB) + abs(dYAB)
+#    C1 = -C2
+#    C0 = dXAB * (Q[0][X] - P0[X]) + dYAB * (Q[0][Y] - P0[Y])
 
-    stock = Q[0]
+    C1 = dYAB * P0[X] - dXAB * P0[Y]
+    C2 = C1 + abs(dXAB) + abs(dYAB)
+    C1 = C1 - abs(dXAB) - abs(dYAB)
 
-    while len(Q) > 1 and C1 <= C0 <= C2:
-        C0 += dYAB * (Q[1][X] - stock[X]) + dXAB * (Q[1][Y] - stock[Y])
+    stock = Q.pop(0)
+    while Q and C1 <= dYAB * Q[0][X] - dYAB * Q[0][Y] <= C2:
         stock = Q.pop(0)
 
     return stock.get_coords()
@@ -197,17 +199,22 @@ def fill_interior(Q1, Q2, P0, P2, axis):
 
         do_scanlines(Q1sub, Q2sub)
 
-        temp, temp2 = Pstart, Pstop
-
         # We check to see if there's something left in the edge and react.
         if len(Q1sub) > 1:
             mark_line_ILV(Pstop, Q1sub[-1], Q2sub, (0, compteur / maxi, 0))
+            do_scanlines(Q1sub, Q2sub)
+            if len(Q1sub) > 2:
+                mid = len(Q1sub) // 2
+                mark_line_ILV(Pstop, Q1sub[mid], Q2sub, (0, compteur / maxi, 0))
+                do_scanlines(Q1sub, Q2sub)
         elif len(Q2sub) > 1:
             mark_line_ILV(Pstart, Q2sub[-1], Q1sub, (0, compteur / maxi, 0))
+            do_scanlines(Q1sub, Q2sub)
+            if len(Q2sub) > 2:
+                mid = len(Q2sub) // 2
+                mark_line_ILV(Pstart, Q2sub[mid], Q1sub, (0, compteur / maxi, 0))
+                do_scanlines(Q1sub, Q2sub)
 
-        do_scanlines(Q1sub, Q2sub)
-
-        Pstart, Pstop = temp, temp2
 
     return Qout
 
