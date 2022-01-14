@@ -197,6 +197,15 @@ def fill_interior(Q1, Q2, P0, P2, axis):
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
 
+        if Q1sub:
+            temp = Q1sub[-1]
+        else:
+            temp = Pstart
+        if Q2sub:
+            temp2 = Q2sub[-1]
+        else:
+            temp2 = Pstop
+
         do_scanlines(Q1sub, Q2sub)
 
         # We check to see if there's something left in the edge and react.
@@ -215,6 +224,7 @@ def fill_interior(Q1, Q2, P0, P2, axis):
                 mark_line_ILV(Pstart, Q2sub[mid], Q1sub, (0, compteur / maxi, 0))
                 do_scanlines(Q1sub, Q2sub)
 
+        Pstart, Pstop = temp, temp2
 
     return Qout
 
