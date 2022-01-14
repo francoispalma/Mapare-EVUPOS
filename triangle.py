@@ -154,10 +154,6 @@ def get_next_in_slice(P0, Q, endP, axis):
     if dXAB == dYAB == 0:
         return Q.pop(0).get_coords()
 
-#    C2 = abs(dXAB) + abs(dYAB)
-#    C1 = -C2
-#    C0 = dXAB * (Q[0][X] - P0[X]) + dYAB * (Q[0][Y] - P0[Y])
-
     C1 = dYAB * P0[X] - dXAB * P0[Y]
     C2 = C1 + abs(dXAB) + abs(dYAB)
     C1 = C1 - abs(dXAB) - abs(dYAB)
@@ -197,16 +193,9 @@ def fill_interior(Q1, Q2, P0, P2, axis):
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
 
-        if Q1sub:
-            temp = Q1sub[-1]
-        else:
-            temp = Pstart
-        if Q2sub:
-            temp2 = Q2sub[-1]
-        else:
-            temp2 = Pstop
-
         do_scanlines(Q1sub, Q2sub)
+
+        temp, temp2 = Pstart, Pstop
 
         # We check to see if there's something left in the edge and react.
         if len(Q1sub) > 1:
