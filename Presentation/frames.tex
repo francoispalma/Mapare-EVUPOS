@@ -53,7 +53,9 @@
 \node[opacity=.4, inner sep=0pt]
     at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
 \node[opacity=1, inner sep=0pt]
-    at(200pt,-20pt){\includegraphics[width=12cm]{resources/triangles.png}};
+    at(130pt,-20pt){\includegraphics[width=10.5cm]{resources/triangles.png}};
+\node[opacity=1, inner sep=0pt]
+    at(370pt,-25pt){\includegraphics[width=3.5cm]{resources/tunneling.png}};
 \end{tikzpicture}
 
 \end{frame}
@@ -95,7 +97,7 @@
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
 \begin{tikzpicture}[remember picture, overlay]
 \node[opacity=.4, inner sep=0pt]
-    at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
+    at(current page.center){\includegraphics[width=17cm]{resources/background.jpg}};
 \end{tikzpicture}
 
   \framesubtitle{\insertsubsectionhead}
@@ -119,7 +121,7 @@
       \item Optimisation en temps
       \item Parfaitement compatible avec le multithreading
       \item Plus on a de triangles plus c'est relativement rapide
-      \item la discrétisation par des entiers réduit les trous dans la couverture
+      \item la discrétisation des entiers permet l’optimisation des temps de calcul
     \end{itemize}
     \vspace{0.6cm}
     \begin{center}
@@ -257,17 +259,13 @@
   \framesubtitle{\insertsubsectionhead}
   \begin{table}
     \centering
-    \begin{tabular}{@{} lccc @{}}
+    \begin{tabular}{@{} lcccc @{}}
       \toprule
-      & \textbf{Velocity} & \textbf{Angle}  & \textbf{Vertical force} \\
-      & $U$ & $\alpha$  & $F_z$ \\
-      & [m/s] & [$^\circ$]  & [N] \\
+      & 100 & 1000  & 10000 & couverture
+      & & triangles & triangles  & triangles & en \% \\
       \midrule
-      2D simulation  & 9 & 2 & 9.23 \\
-      3D simulation  & 10.0 & 3 & 15.039 \\
-      Experiment A   & 11.31 & 2.5 & 13.2 \\
-      Experiment B   & 11.26 & 2.7 & 12.6 \\
-      Experiment C   & 11.33 & 2.47 & 13.6 \\
+      Scanline Optimales  & 2.316 & 20.114 & 209.718 & 92.11 \\
+      Scanline Naïves  & 4.35 & 45.584 & 444.665 & 100 \\
       \bottomrule
     \end{tabular}
   \end{table}
