@@ -11,12 +11,17 @@ from OpenGL.GLUT import *
 from triangle import Triangle3D
 
 
+# window position
+WINPOSX = 200
+WINPOSY = 200
+
+
 # rotation
 X_AXIS = 0.0
 Y_AXIS = 0.0
 Z_AXIS = 0.0
 CONST_ROT = 8.0
-AUTO_ROT = 1
+AUTO_ROT = 0
 
 # zoom
 FOVY = 45.0
@@ -73,7 +78,20 @@ if len(sys.argv) > 1:
 
         print(aftsum/presum, aftsum, presum)
         print(totaltime)
-
+    if "--pos" in sys.argv:
+        index = sys.argv.index("--pos")
+        try:
+            val1 = sys.argv[index + 1]
+            val2 = sys.argv[index + 2]
+        except IndexError:
+            print("Please provide 2 coordinates after '--pos'")
+            exit()
+        try:
+            WINPOSX = int(val1)
+            WINPOSY = int(val2)
+        except ValueError:
+            print("Please provide valid integer coordinates after '--pos'")
+            exit()
 
 
 # Get three random vertices for the demo
@@ -192,13 +210,13 @@ def main():
     """Main function called in the demo.
     """
 
-    width = 640
+    width = 480
     height = 480
 
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
     glutInitWindowSize(width, height)
-    glutInitWindowPosition(200, 200)
+    glutInitWindowPosition(WINPOSX, WINPOSY)
 
     glutCreateWindow('proto')
 

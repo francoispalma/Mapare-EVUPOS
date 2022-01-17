@@ -185,7 +185,7 @@ def fill_interior(Q1, Q2, P0, P2, axis):
             Pstop = get_next_in_slice(Pstop, edge2, Pstart, axis)
             Pstart = tmp
             mark_line_ILV(Pstart, Pstop, Qout, (0, compteur / maxi, 0))
-            compteur += 3
+            compteur += 1
 
     for i in range(P2[axis] - P0[axis] + 1):
         slice_ = P0[axis] + i + 1
