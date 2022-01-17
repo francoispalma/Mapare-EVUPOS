@@ -7,6 +7,8 @@
 \begin{tikzpicture}[remember picture, overlay]
 \node[opacity=.4, inner sep=0pt]
     at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
+\node[opacity=1, inner sep=0pt]
+    at(300pt,-60pt){\includegraphics[width=8cm]{resources/triangles.png}};
 \end{tikzpicture}
 
   \setbeamertemplate{section in toc}[sections numbered]
@@ -53,9 +55,11 @@
 \node[opacity=.4, inner sep=0pt]
     at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
 \node[opacity=1, inner sep=0pt]
-    at(130pt,-20pt){\includegraphics[width=10.5cm]{resources/triangles.png}};
+    at(60pt,-5pt){\includegraphics[width=5cm]{resources/sat.png}};
+\node[opacity=2, inner sep=0pt, rotate=90]
+    at(210pt,-10pt){\includegraphics[width=6cm]{resources/bresenham.png}};
 \node[opacity=1, inner sep=0pt]
-    at(370pt,-25pt){\includegraphics[width=3.5cm]{resources/tunneling.png}};
+    at(350pt,-5pt){\includegraphics[width=4.7cm]{resources/tunneling.png}};
 \end{tikzpicture}
 
 \end{frame}
@@ -125,7 +129,7 @@
     \end{itemize}
     \vspace{0.6cm}
     \begin{center}
-        \includegraphics[scale=0.15]{resources/elephant.png}
+        \includegraphics[scale=0.2]{resources/lapin.png}
     \end{center}
 \end{frame}
 
@@ -133,41 +137,14 @@
 \section{Prototypage}
 %==============================================
 
-\subsection{Plan initial}
+\subsection{Débuts}
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
 \begin{tikzpicture}[remember picture, overlay]
 \node[opacity=.4, inner sep=0pt]
     at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
-\end{tikzpicture}
-
-  \framesubtitle{\insertsubsectionhead}
-  \begin{columns}[T,onlytextwidth]
-    \column{0.4\textwidth}
-    \vspace{0.6cm}
-      \begin{itemize}
-        \item Voxelization d'un triangle
-        \vspace{.3cm}
-        \item Utiliser OpenGL
-        \vspace{.3cm}
-        \item Prototypage 2D
-      \end{itemize}
-    \column{0.4\textwidth}
-      \includegraphics[scale=0.5]{resources/opengl_logo.png}
-  \end{columns}
-  \vfill
-  \vfill
-  \hspace{0.2cm}
-  {\large Tout semblait simple et clair}
-\end{frame}
-
-%--------------------------------------
-\subsection{Premiers résultats}
-
-\begin{frame}[fragile=singleslide]{\insertsectionhead}
-\begin{tikzpicture}[remember picture, overlay]
-\node[opacity=.4, inner sep=0pt]
-    at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
+\node[opacity=1, inner sep=0pt]
+    at(340pt,0pt){\includegraphics[width=3.6cm]{resources/opengl_logo.png}};
 \end{tikzpicture}
 
   \framesubtitle{\insertsubsectionhead}
@@ -228,12 +205,12 @@
   \begin{columns}[T,onlytextwidth]
     \column{0.5\textwidth}
       \begin{itemize}
-        \vspace{.55cm}
+        \vspace{.85cm}
         \item Manque de détail dans les cas 2D
         \vspace{.3cm}
         \item Choix d’utilisation de Bresenham dans les cas 2D
         \vspace{.3cm}
-        \item Des parties de l'algorithme ne sont pas détaillées(mettre image avec encadrés rouges
+        \item Des parties de l'algorithme ne sont pas détaillées
       \end{itemize}
     \column{0.6\textwidth}
     \begin{figure}
@@ -301,8 +278,9 @@ at (280pt,-30pt){\includegraphics[width=8cm]{resources/lit.png}};
   \end{itemize}
 \end{frame}
 
-%--------------------------------------
-\subsection{Conclusion}
+%==============================================
+\section*{Conclusion}
+%==============================================
 
 \begin{frame}[fragile=singleslide]{\insertsectionhead}
 \begin{tikzpicture}[remember picture, overlay]
@@ -310,7 +288,16 @@ at (280pt,-30pt){\includegraphics[width=8cm]{resources/lit.png}};
     at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
 \end{tikzpicture}
 
-  \framesubtitle{\insertsubsectionhead}
-  {\Large Implémentation de l’algo de voxelization de l’article en OpenGL réussi mais avec notre interprétation pour le problème des cas 2D}
+    {\Large
+    \begin{itemize}
+     \item Implementation réussie
+     \vspace{.3cm}
+     \begin{itemize}
+     {\Large \item Mais avec notre interprétation pour les cas 2D}
+     \end{itemize}
+     \vspace{.3cm}
+     \item Présentation en LaTeX
+    \end{itemize}
+    }
 \end{frame}
 
