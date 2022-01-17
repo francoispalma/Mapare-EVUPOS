@@ -24,12 +24,14 @@
 \node[opacity=.4, inner sep=0pt]
     at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
 \node[opacity=1, inner sep=0pt]
-    at(325pt, -120pt){\includegraphics[width=5.5cm]{resources/light.png}};
+    at(325pt, -130pt){\includegraphics[width=5.5cm]{resources/light.png}};
 \node[opacity=1, inner sep=0pt]
-    at(275pt, 10pt){\includegraphics[width=8cm]{resources/voxel.png}};
+    at(110pt, -30pt){\includegraphics[width=5.5cm]{resources/voxel.png}};
+\node[opacity=1, inner sep=0pt]
+    at(325pt, -30pt){\includegraphics[width=6cm]{resources/dino.png}};
 \end{tikzpicture}
 
-    \vspace{.5cm}
+    \vspace{3cm}
     \textbf{Les utilisations:}
     \vspace{.2cm}
     \begin{itemize}
@@ -56,10 +58,15 @@
     at(current page.center){\includegraphics[width=16cm]{resources/background.jpg}};
 \node[opacity=1, inner sep=0pt]
     at(60pt,-5pt){\includegraphics[width=5cm]{resources/sat.png}};
-\node[opacity=2, inner sep=0pt, rotate=90]
-    at(210pt,-10pt){\includegraphics[width=6cm]{resources/bresenham.png}};
+\node [label={[xshift=60pt, yshift=-90pt]SAT}];
+
+\node[opacity=2, inner sep=0pt]
+    at(210pt,-10pt){\includegraphics[width=3.5cm]{resources/bresenham.png}};
+\node [label={[xshift=210pt, yshift=-125pt]Bresenham}];
+
 \node[opacity=1, inner sep=0pt]
-    at(350pt,-5pt){\includegraphics[width=4.7cm]{resources/tunneling.png}};
+    at(350pt,-5pt){\includegraphics[width=4cm]{resources/tunneling.png}};
+\node [label={[xshift=350pt, yshift=-125pt]Couverture & Tunel}];
 \end{tikzpicture}
 
 \end{frame}
