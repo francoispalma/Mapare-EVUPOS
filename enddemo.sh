@@ -1,1 +1,1 @@
-pkill -f 'python3 proto.py'
+pkill -f 'proto.py'
