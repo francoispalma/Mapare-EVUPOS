@@ -21,7 +21,7 @@ X_AXIS = 0.0
 Y_AXIS = 0.0
 Z_AXIS = 0.0
 CONST_ROT = 8.0
-AUTO_ROT = 0
+AUTO_ROT = 1
 
 # zoom
 FOVY = 45.0
@@ -98,10 +98,6 @@ if len(sys.argv) > 1:
 A, B, C = [get_coord(), get_coord(), get_coord()], \
           [get_coord(), get_coord(), get_coord()], \
           [get_coord(), get_coord(), get_coord()]
-
-#A, B, C = [-46, -25, -15],[98, -1, -19],[0, 88, -13]
-#A, B, C = [63, 66, -75], [-78, 71, 74], [79, 67, 52]
-#A, B, C = [-30, 0, 0], [30, 0, 1], [0, 52, 0]
 
 print(A, B, C)
 

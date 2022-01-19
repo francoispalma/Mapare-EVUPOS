@@ -53,6 +53,7 @@ def bresenham(P0, P1, Q, axis, color=(0, 1, 0)):
     X = axes[0]
     Y = axes[1]
 
+    # dx is the derivation in x and dy is the derivation in y.
     # We get dx and its sign, dy and its sign then the error.
     dx = P1[X] - P0[X]
     sx = sign(dx)
@@ -93,6 +94,7 @@ def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
     """Function that marks a line of voxels between P0 and P1, putting it in Q.
     color is to specify a color for the voxel line.
     """
+    # We get the sign for each direction to know how to increment in each step.
     dP = []
     dP += [sign(P1[0] -  P0[0])]
     dP += [sign(P1[1] -  P0[1])]
@@ -103,19 +105,34 @@ def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
         if dP[i] == 0:  # If one of the axes is flat we use bresenham.
             return bresenham(P0, P1, Q, i, color)
 
+    # This list corresponds to the lx, ly and lz the three distance variables
+    # towards the end point.
     L = []
     L += [abs(P1[1] - P0[1]) * abs(P1[2] - P0[2])]
     L += [abs(P1[0] - P0[0]) * abs(P1[2] - P0[2])]
     L += [abs(P1[0] - P0[0]) * abs(P1[1] - P0[1])]
+
+    # We make a copy for later on.
     M = L.copy()
 
+    # We loop while we don't reach the end point.
     Pcurrent = P0.copy()
     while Pcurrent[0] != P1[0] or Pcurrent[1] != P1[1] or Pcurrent[2] != P1[2]:
+        # We check which distance value towards the voxel face is minimal
         Lmin, Lindex = get_min(L)
+
+        # We increment the current point towards the end point in the direction
+        # chosen earlier.
         Pcurrent[Lindex] += dP[Lindex]
+
+        # We decrement the other distance values for the next iteration.
         L = [L[i] - Lmin for i in range(3)]
+
+        # The distance value in the minimal direction should be 0 so we reset
+        # it with twice the initial deviation for the next iteration.
         L[Lindex] = 2 * M[Lindex]
 
+        # The current point is in the scanline so we add it to the Queue.
         Q += [Voxel(*Pcurrent, color)]
 
     return Q
@@ -124,6 +141,8 @@ def mark_line_ILV(P0, P1, Q, color=(0, 1, 0)):
 def get_sub_sequence(Q, slice_, axis):
     """Function that returns a slice of Q with a specific coordinate on axis.
     """
+    # We simply get each point in the line that's below a specific coordinate
+    # in axis.
     VLC = []
     while Q and Q[0][axis] < slice_:
         VLC += [Q.pop(0)]
@@ -138,6 +157,7 @@ def get_next_in_slice(P0, Q, endP, axis):
     if not Q:
         return P0
 
+    # If we only have one point left in the queue, we return it.
     if len(Q) == 1:
         return Q.pop().get_coords()
 
@@ -151,17 +171,26 @@ def get_next_in_slice(P0, Q, endP, axis):
     dXAB = P0[X] - endP[X]
     dYAB = P0[Y] - endP[Y]
 
+    # If somehow P0 and EndP are the same points we return the next point
+    # in the queue.
     if dXAB == dYAB == 0:
         return Q.pop(0).get_coords()
 
+    # C1 and C2 are the lower and upper bounds respectively for our maximal
+    # distance condition. We don't use C0 as a variable name.
+    # If the increment direction can be known in advance easily, storing C0
+    # and incrementing it over time could be more time efficient.
     C1 = dYAB * P0[X] - dXAB * P0[Y]
     C2 = C1 + abs(dXAB) + abs(dYAB)
     C1 = C1 - abs(dXAB) - abs(dYAB)
 
+    # While the next point satisfies the maximal distance condition, we store
+    # it and proceed.
     stock = Q.pop(0)
     while Q and C1 <= dYAB * Q[0][X] - dYAB * Q[0][Y] <= C2:
         stock = Q.pop(0)
 
+    # The last value in stock is the last one to fulfill the condition.
     return stock.get_coords()
 
 
@@ -172,40 +201,69 @@ def fill_interior(Q1, Q2, P0, P2, axis):
     maxi = max(len(Q1), len(Q2))
     compteur = maxi / 20
 
+    # Q1c, Q2c are copies of Q1, Q2 respectively.
     Q1c = Q1.copy()
     Q2c = Q2.copy()
     Qout = []
+
+    # We initialise Pstart and Pstop.
     Pstart = Q1c.pop(0)
     Pstop = Q2c.pop(0)
 
+    # Sub function to repeat the scanlines part of the algorithm.
     def do_scanlines(edge1, edge2):
         nonlocal Pstop, Pstart, compteur
+        # While we have an edge on each side of the slice we loop.
         while edge1 and edge2:
+            # We get the next in the slice for each edge.
             tmp = get_next_in_slice(Pstart, edge1, Pstop, axis)
             Pstop = get_next_in_slice(Pstop, edge2, Pstart, axis)
             Pstart = tmp
+
+            # We do the scanline.
             mark_line_ILV(Pstart, Pstop, Qout, (0, compteur / maxi, 0))
             compteur += 1
 
+    # We repeat for every slice in the triangle.
     for i in range(P2[axis] - P0[axis] + 1):
         slice_ = P0[axis] + i + 1
 
+        # We get the subsequence of coordinates below the current value in axis.
         Q1sub = get_sub_sequence(Q1c, slice_, axis)
         Q2sub = get_sub_sequence(Q2c, slice_, axis)
 
+        # We do the scanlines.
         do_scanlines(Q1sub, Q2sub)
 
+        # We store the state Pstart and Pstop are in.
         temp, temp2 = Pstart, Pstop
 
         # We check to see if there's something left in the edge and react.
         if len(Q1sub) > 1:
+            # If we have a chunk of this side of the slice left we do a triangle
+            # from the end of the other side of the slice towards the end of
+            # this one to get another triangle to do optimal scanlines with.
+            # See bottom right of page 6 of the article for more details.
+
+            # We put the new edge into the depleted edge of the slice.
             mark_line_ILV(Pstop, Q1sub[-1], Q2sub, (0, compteur / maxi, 0))
+
+            # We then do the scanlines.
             do_scanlines(Q1sub, Q2sub)
+
+            # If we still have something left in the original chunk we have to
+            # react.
             if len(Q1sub) > 2:
+                # We get the middle of the remaining edge.
                 mid = len(Q1sub) // 2
+
+                # We form a new edge towards it from the end of the last edge.
                 mark_line_ILV(Pstop, Q1sub[mid], Q2sub, (0, compteur / maxi, 0))
+
+                # We then do the scanlines.
                 do_scanlines(Q1sub, Q2sub)
         elif len(Q2sub) > 1:
+            # This is analogous and symetrical with the other part above.
             mark_line_ILV(Pstart, Q2sub[-1], Q1sub, (0, compteur / maxi, 0))
             do_scanlines(Q1sub, Q2sub)
             if len(Q2sub) > 2:
@@ -213,6 +271,7 @@ def fill_interior(Q1, Q2, P0, P2, axis):
                 mark_line_ILV(Pstart, Q2sub[mid], Q1sub, (0, compteur / maxi, 0))
                 do_scanlines(Q1sub, Q2sub)
 
+        # We restore Pstart and Pstop for distance conditions in the next slice.
         Pstart, Pstop = temp, temp2
 
     return Qout
